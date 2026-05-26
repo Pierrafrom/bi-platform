@@ -1,0 +1,30 @@
+root = true
+
+# All files: LF endings, UTF-8, trim trailing whitespace
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# SQL and dbt models: 4-space indent
+[*.sql]
+indent_size = 4
+
+# YAML (Airflow DAGs, dbt configs): 2-space indent
+[*.{yml,yaml}]
+indent_size = 2
+
+# TOML (pyproject.toml)
+[*.toml]
+indent_size = 4
+
+# Markdown: preserve trailing spaces (line breaks)
+[*.md]
+trim_trailing_whitespace = false
+
+# Flat source files (read-only inputs — no formatting applied)
+[inputs/**]
+indent_size = unset

@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-tools:
+        patterns: ["ruff", "mypy", "pytest*", "types-*"]
+      airflow:
+        patterns: ["apache-airflow*"]
+      dbt:
+        patterns: ["dbt-*"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

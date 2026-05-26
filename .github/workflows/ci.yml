@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Python quality: ruff + mypy
+  # ---------------------------------------------------------------------------
+  lint-and-type-check:
+    name: Lint & type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version-file: ".python-version"
+          enable-caching: true
+
+      - name: Install dev dependencies
+        run: uv sync --only-dev
+
+      - name: Ruff lint
+        run: uv run ruff check airflow/ tests/ --output-format=github
+
+      - name: Ruff format check
+        run: uv run ruff format --check airflow/ tests/
+
+      - name: Mypy
+        run: uv run mypy airflow/
+
+  # ---------------------------------------------------------------------------
+  # Python tests
+  # ---------------------------------------------------------------------------
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint-and-type-check
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version-file: ".python-version"
+          enable-caching: true
+
+      - name: Install dependencies
+        run: uv sync --only-dev
+
+      - name: Run pytest
+        run: uv run pytest --tb=short -q
+
+  # ---------------------------------------------------------------------------
+  # dbt: compile check (no Snowflake connection needed)
+  # Runs only when dbt models change
+  # ---------------------------------------------------------------------------
+  dbt-compile:
+    name: dbt compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: >
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.changed_files, ','), 'dbt/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version-file: ".python-version"
+          enable-caching: true
+
+      - name: Install dbt
+        run: uv sync
+
+      - name: Write dbt profiles
+        # Uses a dummy Snowflake profile — compile only, no connection made
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'EOF'
+          bi_platform:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: dummy
+                user: dummy
+                password: dummy
+                role: dummy
+                database: BI_PLATFORM
+                warehouse: dummy
+                schema: STAGING
+                threads: 1
+          EOF
+
+      - name: dbt deps
+        working-directory: dbt/
+        run: uv run dbt deps
+
+      - name: dbt compile
+        working-directory: dbt/
+        run: uv run dbt compile --profiles-dir ~/.dbt

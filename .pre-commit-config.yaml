@@ -1,0 +1,62 @@
+repos:
+  # ---------------------------------------------------------------------------
+  # Standard hygiene checks (no extra install needed)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace        # Remove trailing spaces
+      - id: end-of-file-fixer          # Ensure files end with a newline
+      - id: check-yaml                 # Validate YAML syntax
+      - id: check-toml                 # Validate TOML syntax
+      - id: check-json                 # Validate JSON syntax
+      - id: check-merge-conflict       # Block files with <<<< merge markers
+      - id: check-added-large-files    # Block files >500KB (prevents accidental data commit)
+        args: ["--maxkb=500"]
+      - id: mixed-line-ending          # Enforce LF
+        args: ["--fix=lf"]
+      - id: detect-private-key         # Block accidentally committed private keys
+      - id: no-commit-to-branch        # Block direct commits to main
+        args: ["--branch=main"]
+
+  # ---------------------------------------------------------------------------
+  # Python: ruff (lint + format — replaces flake8, isort, black)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.12
+    hooks:
+      - id: ruff                       # Lint
+        args: ["--fix"]
+      - id: ruff-format                # Format
+
+  # ---------------------------------------------------------------------------
+  # Python: mypy (strict type checking)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        files: ^airflow/
+        additional_dependencies:
+          - "types-python-dateutil"
+
+  # ---------------------------------------------------------------------------
+  # SQL: sqlfluff (dbt-aware SQL linting)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.4.0
+    hooks:
+      - id: sqlfluff-lint
+        files: ^dbt/models/
+        args: ["--dialect=snowflake", "--templater=dbt"]
+      - id: sqlfluff-fix
+        files: ^dbt/models/
+        args: ["--dialect=snowflake", "--templater=dbt"]
+
+  # ---------------------------------------------------------------------------
+  # Secrets: gitleaks (scan for credentials in diff)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.27.2
+    hooks:
+      - id: gitleaks
