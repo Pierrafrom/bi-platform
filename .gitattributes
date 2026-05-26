@@ -1,0 +1,60 @@
+# =============================================================================
+# .gitattributes — line-ending normalisation + GitHub linguist hints
+# All text files use LF (repo lives on Linux / WSL).
+# =============================================================================
+
+# Default: auto-detect text/binary, normalise to LF on commit
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Source code — force text + LF
+# ---------------------------------------------------------------------------
+*.sql   text eol=lf
+*.py    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.toml  text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.cfg   text eol=lf
+*.ini   text eol=lf
+*.env   text eol=lf
+*.sh    text eol=lf
+*.rst   text eol=lf
+
+# Source data flat files (semicolon-delimited)
+*.txt   text eol=lf
+
+# ---------------------------------------------------------------------------
+# Binary files — never diff or merge
+# ---------------------------------------------------------------------------
+# Documents
+*.pdf   binary
+*.xlsx  binary
+*.xls   binary
+
+# Power BI
+*.pbix  binary
+*.pbit  binary
+
+# Images
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.svg   binary
+
+# Archives
+*.zip   binary
+*.tar   binary
+*.gz    binary
+
+# ---------------------------------------------------------------------------
+# GitHub Linguist — keep language stats meaningful
+# ---------------------------------------------------------------------------
+# Source data is data, not code
+inputs/**           linguist-vendored=true
+
+# Project brief PDFs are documentation
+instructions/**     linguist-documentation=true
