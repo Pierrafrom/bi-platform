@@ -4,63 +4,90 @@ Source de vérité : `inputs/Hopital Mapping VF.xlsx` et `inputs/Hopital CI VF.x
 
 ## Fichiers
 
-| Fichier | Couche | Description |
-|---|---|---|
-| [01-staging.md](01-staging.md) | **STG** | Fichiers source → tables de staging Snowflake |
-| [02-socle.md](02-socle.md) | **SOC** | Staging → tables de socle (Party Model) |
-| [03-technique.md](03-technique.md) | **TCH** | Tables de suivi pipeline (run / script) |
+| # | Fichier | Couche | Description |
+|---|---|---|---|
+| 1 | [01-staging.md](01-staging.md) | **STG** | Ingestion des fichiers plats → Snowflake |
+| 2 | [02-obs.md](02-obs.md) | **OBS** | Archive brute des données STG (historisation) |
+| 3 | [03-wrk.md](03-wrk.md) | **WRK** | Travail : qualité, dédoublonnage, normalisation |
+| 4 | [04-rej.md](04-rej.md) | **REJ** | Rejets de qualité et recyclage |
+| 5 | [05-socle.md](05-socle.md) | **SOC** | Socle final (Party Model) après bascule |
+| 6 | [06-technique.md](06-technique.md) | **TCH** | Suivi pipeline run / script |
+
+---
 
 ## Architecture globale
 
 ```mermaid
-flowchart LR
-    subgraph SRC["Fichiers source (inputs/)"]
-        direction TB
-        F1[CHAMBRE_YYYYMMDD.txt]
-        F2[PATIENT_YYYYMMDD.txt]
-        F3[PERSONNEL_YYYYMMDD.txt]
-        F4[MEDICAMENT_YYYYMMDD.txt]
-        F5[CONSULTATION_YYYYMMDD.txt]
-        F6[TRAITEMENT_YYYYMMDD.txt]
-        F7[HOSPITALISATION_YYYYMMDD.txt]
+flowchart TD
+    subgraph SRC["📁 Fichiers source (inputs/)"]
+        F["TABLE_YYYYMMDD.txt\n7 tables · quotidien · UTF-8 · ;\nContrat d'interface : Hopital CI VF.xlsx"]
     end
 
-    subgraph STG["Snowflake — Staging (STG)"]
-        direction TB
-        S1[CHAMBRE]
-        S2[PATIENT]
-        S3[PERSONNEL]
-        S4[MEDICAMENT]
-        S5[CONSULTATION]
-        S6[TRAITEMENT]
-        S7[HOSPITALISATION]
+    subgraph SNF["❄️ Snowflake"]
+        subgraph STG["STG — Staging"]
+            S["Ingestion brute\nCast types · Header check\nAucune logique métier"]
+        end
+
+        subgraph OBS["OBS — Observation"]
+            O["Archive des données STG\nDurée d'historisation configurable\nBase de rejeu et d'audit"]
+        end
+
+        subgraph WRK["WRK — Work / Travail"]
+            W1["① Contrôle qualité\n(règles CI)"]
+            W2["② Dédoublonnage"]
+            W3["③ Normalisation\n(temp C/F, booléens…)"]
+            W4["④ Résolution\nsurrogate keys"]
+            W1 --> W2 --> W3 --> W4
+        end
+
+        subgraph REJ["REJ — Rejet"]
+            R["Lignes KO avec\ncode + motif de rejet\nRecyclage possible"]
+        end
+
+        subgraph SOC["SOC — Socle"]
+            SC["Party Model validé\nR_PART · R_ROOM · R_MEDC\nO_CONS · O_TRET · O_HOSP\nO_INDV · O_STFF · O_TELP · O_ADDR"]
+        end
+
+        subgraph TCH["TCH — Technique"]
+            T["T_SUIV_RUN\nT_SUIV_TRMT\nTraçabilité EXEC_ID"]
+        end
+
+        S -->|"archive\nbatch"| O
+        S -->|"chargement"| W1
+        W4 -->|"lignes KO"| R
+        W4 -->|"BASCULE\n(lignes OK)"| SC
+        R -.->|"recyclage\naprès correction"| W1
+        SC -.->|"EXEC_ID"| T
+        WRK -.->|"EXEC_ID"| T
     end
 
-    subgraph SOC["Snowflake — Socle (SOC)"]
-        direction TB
-        R1[R_PART]
-        R2[R_ROOM]
-        R3[R_MEDC]
-        O1[O_INDV]
-        O2[O_STFF]
-        O3[O_TELP]
-        O4[O_ADDR]
-        O5[O_CONS]
-        O6[O_TRET]
-        O7[O_HOSP]
-    end
+    F -->|"Airflow DAG\nIngestion quotidienne"| S
 
-    subgraph TCH["Snowflake — Technique (TCH)"]
-        T1[T_SUIV_RUN]
-        T2[T_SUIV_TRMT]
-    end
-
-    subgraph PBI["Power BI"]
-        D[Dashboards]
-    end
-
-    SRC -->|"Airflow + dbt\nchargement quotidien"| STG
-    STG -->|"dbt\ntransformation"| SOC
-    SOC --> PBI
-    SOC -.->|"EXEC_ID"| TCH
+    PBI["📊 Power BI"]
+    SC --> PBI
 ```
+
+---
+
+## Rôle de chaque couche
+
+| Couche | Question clé | Ce qu'elle répond |
+|---|---|---|
+| **STG** | _Qu'est-ce que le système source nous a envoyé ?_ | Copie exacte des fichiers plats, typée |
+| **OBS** | _Peut-on rejouer un batch passé ?_ | Archive horodatée, durée de rétention configurable |
+| **WRK** | _Ces données sont-elles exploitables ?_ | Qualité, dédup, normalisation — seules les lignes OK continuent |
+| **REJ** | _Que faire des données mauvaises ?_ | Stockage avec motif, possibilité de correction et recyclage |
+| **SOC** | _Quel est l'état de référence validé ?_ | Party Model propre, prêt pour Power BI |
+| **TCH** | _Qui a chargé cette ligne et quand ?_ | Traçabilité complète de chaque exécution |
+
+---
+
+## Mapping couches ↔ dbt
+
+| Couche Snowflake | Couche dbt | Matérialisation |
+|---|---|---|
+| STG | `models/staging/` | view |
+| OBS | `models/intermediate/obs/` | table (partitionnée par batch_date) |
+| WRK | `models/intermediate/wrk/` | table |
+| REJ | `models/intermediate/rej/` | table (append) |
+| SOC | `models/marts/` | table |

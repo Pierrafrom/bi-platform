@@ -1,6 +1,42 @@
-# Étape 2 — Socle (SOC)
+# Couche SOC — Socle
 
-Transformation du schéma **STG** vers le schéma **SOC** (couche de socle).
+## Rôle
+
+Le SOC est la **couche de référence finale** : données validées, propres, historisées,
+prêtes pour Power BI. Il répond à la question : *« Quel est l'état de référence validé ? »*
+
+Le SOC n'est **jamais alimenté directement depuis STG**. Il reçoit uniquement
+les lignes qui ont passé tous les contrôles du WRK via l'étape de **bascule**.
+
+---
+
+## La Bascule WRK → SOC
+
+La **bascule** est l'étape de promotion : elle transfère les lignes `WRK_STTS_CD = 'OK'`
+du WRK vers le SOC en appliquant les transformations finales (surrogate keys, renommage).
+
+```mermaid
+flowchart LR
+    WRK["WRK\nWRK_STTS_CD = OK\nDonnées validées"]
+    BASCULE{"BASCULE\nSELECT FROM WRK\nWHERE STTS = OK"}
+    SOC["SOC\nParty Model\nDonnées de référence"]
+
+    WRK --> BASCULE --> SOC
+```
+
+Elle se déclenche uniquement si :
+
+1. Toutes les étapes WRK sont terminées avec statut `OK`
+2. Le taux de rejet WRK est sous le seuil d'alerte (configurable)
+3. Les surrogate keys (`R_PART`, `R_MEDC`) ont été résolues
+
+En dbt, ce sont les modèles `marts/` qui jouent ce rôle :
+ils lisent depuis `{{ ref('wrk_*') }}` et écrivent dans le schéma `SOC`.
+
+---
+
+## Données sources
+
 Référence : `inputs/Hopital Mapping VF.xlsx` (onglet *Socle*).
 
 ---
