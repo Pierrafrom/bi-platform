@@ -20,8 +20,8 @@ uv run pre-commit install
 uv run pre-commit install --hook-type commit-msg
 
 # 5. Verify everything works
-uv run ruff check airflow/
-uv run mypy airflow/
+uv run ruff check airflow/ pipeline/ tests/
+uv run mypy pipeline/
 uv run pytest
 ```
 
@@ -32,7 +32,7 @@ uv run pytest
 
 ## Branch strategy
 
-```
+```text
 main  (protected — never push directly)
  └── feat/sprint2/stg-patient       ← your feature branch
  └── feat/sprint2/dag-load-staging
@@ -45,7 +45,7 @@ main  (protected — never push directly)
 
 ### Branch naming
 
-```
+```text
 feat/<sprint>/<short-topic>    feat/sprint2/stg-consultation
 fix/<sprint>/<short-topic>     fix/sprint2/null-id-patient
 refactor/<topic>               refactor/logging-utils
@@ -57,7 +57,7 @@ refactor/<topic>               refactor/logging-utils
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 feat: add stg_consultation dbt model
 fix: handle null ID_TRAITEMENT in int_consultation
 test: add unit tests for logging_config
@@ -86,9 +86,9 @@ Types: `feat` · `fix` · `test` · `docs` · `refactor` · `chore` · `ci`
 
 ```bash
 # Python
-uv run ruff check airflow/ tests/     # lint
-uv run ruff format airflow/ tests/    # format
-uv run mypy airflow/                  # type check
+uv run ruff check airflow/ pipeline/ tests/     # lint
+uv run ruff format airflow/ pipeline/ tests/    # format
+uv run mypy pipeline/                           # type check
 uv run pytest                         # tests
 uv run pre-commit run --all-files     # run all hooks manually
 

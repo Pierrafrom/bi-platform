@@ -29,7 +29,7 @@ This is a greenfield repo. Code is written incrementally across 4 sprints (21/05
 
 Data flows from flat files → Snowflake (3 layers) → Power BI:
 
-```
+```text
 inputs/Data Hospital/BDD_HOSPITAL_YYYYMMDD/
     │   (7 semicolon-delimited .txt files, one batch per day)
     ▼
@@ -48,6 +48,7 @@ inputs/Data Hospital/BDD_HOSPITAL_YYYYMMDD/
 ```
 
 **Layer responsibilities:**
+
 - **Staging/ODS**: Raw ingestion, quality control, rejection management
 - **Travail**: Quality unification, deduplication, business rules
 - **Socle/Vue**: Historized fact and dimension tables (star/snowflake schema) for Power BI
@@ -67,7 +68,8 @@ inputs/Data Hospital/BDD_HOSPITAL_YYYYMMDD/
 ### Tables and columns
 
 **PATIENT** — master patient record
-```
+
+```text
 ID_PATIENT ; NOM_PATIENT ; PRENOM_PATIENT ; DT_NAISS ; VILLE_NAISS ; PAYS_NAISS
 NUM_SECU ; IND_PAYS_NUM_TELP ; NUM_TELEPHONE
 NUM_VOIE ; DSC_VOIE ; CMPL_VOIE ; CD_POSTAL ; VILLE ; PAYS
@@ -75,24 +77,28 @@ TS_CREATION_PATIENT ; TS_MAJ_PATIENT
 ```
 
 **PERSONNEL** — medical and administrative staff
-```
+
+```text
 ID_PERSONNEL ; NOM_PERSONNEL ; PRENOM_PERSONNEL ; FONCTION_PERSONNEL
 TS_DEBUT_ACTIVITE ; TS_FIN_ACTIVITE ; RAISON_FIN_ACTIVITE
 TS_CREATION_PERSONNEL ; TS_MAJ_PERSONNEL ; CD_STATUT_PERSONNEL
 ```
 
 **CHAMBRE** — hospital rooms
-```
+
+```text
 NO_CHAMBRE ; NOM_CHAMBRE ; NO_ETAGE ; NOM_BATIMENT ; TYPE_CHAMBRE ; PRIX_JOUR ; DT_CREATION
 ```
 
 **MEDICAMENT** — medication catalogue (reference / slowly changing)
-```
+
+```text
 CD_MEDICAMENT ; NOM_MEDICAMENT ; CONDIT_MEDICAMENT ; CATG_MEDICAMENT ; MARQUE_FABRI
 ```
 
 **CONSULTATION** — central transactional table (one row = one patient visit)
-```
+
+```text
 ID_CONSULT ; ID_PERSONNEL ; ID_PATIENT
 TS_DEBUT_CONSULT ; TS_FIN_CONSULT
 POIDS_PATIENT ; TEMP_PATIENT ; UNIT_TEMP ; TENSION_PATIENT
@@ -100,20 +106,22 @@ DSC_PATHO ; INDIC_DIABETE ; ID_TRAITEMENT ; INDIC_HOSPI
 ```
 
 **TRAITEMENT** — treatment prescribed during a consultation
-```
+
+```text
 ID_TRAITEMENT ; CD_MEDICAMENT ; CATG_MEDICAMENT ; MARQUE_FABRI
 QTE_MEDICAMENT ; DSC_POSOLOGIE ; ID_CONSULT ; TS_CREATION_TRAITEMENT
 ```
 
 **HOSPITALISATION** — inpatient stay linked to a consultation
-```
+
+```text
 ID_HOSPI ; ID_CONSULT_hospi ; NO_CHAMBRE_hospi
 TS_DEBUT_HOSPI ; TS_FIN_HOSPI ; COUT_HOSPI ; ID_PERSONNEL_RESP
 ```
 
 ### Key relationships
 
-```
+```text
 PATIENT ──< CONSULTATION >── PERSONNEL
                 │
                 ├──< TRAITEMENT >── MEDICAMENT
@@ -146,7 +154,7 @@ PATIENT ──< CONSULTATION >── PERSONNEL
 
 ## Repository structure (target)
 
-```
+```text
 bi-platform/
 ├── dbt/                        # dbt project root
 │   ├── dbt_project.yml
@@ -221,11 +229,11 @@ See also `.github/copilot-instructions.md` for the full reference (used by Copil
 ### Python environment
 
 ```bash
-uv sync                              # create/update venv from pyproject.toml
-uv run ruff check airflow/ tests/    # lint (replaces flake8 + isort)
-uv run ruff format airflow/ tests/   # format (replaces black)
-uv run mypy airflow/                 # strict type checking
-uv run pytest                        # run tests
+uv sync                                          # create/update venv from pyproject.toml
+uv run ruff check airflow/ pipeline/ tests/      # lint (replaces flake8 + isort)
+uv run ruff format airflow/ pipeline/ tests/     # format (replaces black)
+uv run mypy pipeline/                            # strict type checking
+uv run pytest                                    # run tests
 ```
 
 - Python **3.12** (pinned in `.python-version`)

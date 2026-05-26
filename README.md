@@ -1,6 +1,6 @@
 # bi-platform
 
-NF26 — Mise en place d'une solution décisionnelle  
+NF26 — Mise en place d'une solution décisionnelle
 **Datawarehouse Snowflake + Reporting Power BI**
 
 Projet universitaire UTC, encadré par [SMART TEEM](https://www.smartteem.fr/).
@@ -17,7 +17,7 @@ Projet universitaire UTC, encadré par [SMART TEEM](https://www.smartteem.fr/).
 
 ## Architecture
 
-```
+```text
 inputs/Data Hospital/BDD_HOSPITAL_YYYYMMDD/
         │  (7 fichiers .txt, séparateur ;, 1 batch/jour)
         ▼
@@ -30,7 +30,7 @@ inputs/Data Hospital/BDD_HOSPITAL_YYYYMMDD/
 
 ## Domaine métier
 
-Source : plateforme hospitalière  
+Source : plateforme hospitalière
 Tables : `PATIENT`, `PERSONNEL`, `CHAMBRE`, `MEDICAMENT`, `CONSULTATION`, `TRAITEMENT`, `HOSPITALISATION`
 
 ## Lancer dbt
@@ -45,7 +45,7 @@ dbt docs generate && dbt docs serve  # explorer la lignée
 
 ## Structure du repo
 
-```
+```text
 bi-platform/
 ├── dbt/            # modèles, tests, macros, seeds
 ├── airflow/        # DAGs d'orchestration
