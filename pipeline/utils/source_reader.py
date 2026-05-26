@@ -9,7 +9,7 @@ All files are semicolon-delimited, UTF-8, with a header row.
 Usage::
 
     from datetime import date
-    from airflow.utils.source_reader import read_batch, validate_batch
+    from pipeline.utils.source_reader import read_batch, validate_batch
 
     rows = read_batch(date(2026, 4, 29), "PATIENT")
     summary = validate_batch(date(2026, 4, 29), "PATIENT")

@@ -12,8 +12,8 @@ import logging
 from datetime import date, timedelta
 
 from airflow.decorators import dag, task
-from airflow.utils.logging_config import configure_logging
-from airflow.utils.source_reader import validate_all_tables
+from pipeline.utils.logging_config import configure_logging
+from pipeline.utils.source_reader import validate_all_tables
 
 logger = logging.getLogger(__name__)
 

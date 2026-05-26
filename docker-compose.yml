@@ -1,0 +1,126 @@
+# ============================================================================
+# bi-platform — Airflow Docker Compose
+#
+# Services : postgres · airflow-init · airflow-scheduler · airflow-webserver
+# Executor  : LocalExecutor (no Redis / Celery needed for this project)
+#
+# Usage:
+#   docker compose up airflow-init      # first time only — init DB + admin user
+#   docker compose up -d                # start scheduler + webserver
+#   docker compose down                 # stop all containers
+#   docker compose logs -f scheduler    # follow scheduler logs
+# ============================================================================
+
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  environment: &airflow-common-env
+    # --- Airflow core ---
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+    # --- Python path — makes pipeline/ importable inside the containers ---
+    PYTHONPATH: /opt/biplatform
+
+    # --- Snowflake credentials — forwarded from .env ---
+    SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT}
+    SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+    SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
+    SNOWFLAKE_ROLE: ${SNOWFLAKE_ROLE}
+    SNOWFLAKE_WAREHOUSE: ${SNOWFLAKE_WAREHOUSE}
+    SNOWFLAKE_DATABASE: ${SNOWFLAKE_DATABASE}
+    SNOWFLAKE_SCHEMA: ${SNOWFLAKE_SCHEMA:-STAGING}
+
+    # --- dbt ---
+    DBT_TARGET: ${DBT_TARGET:-dev}
+
+  volumes:
+    # DAG files (hot-reload: edits appear without restart)
+    - ./airflow/dags:/opt/airflow/dags
+    # Our custom pipeline package
+    - ./pipeline:/opt/biplatform/pipeline
+    # dbt project (called via BashOperator)
+    - ./dbt:/opt/biplatform/dbt
+    # Source flat files
+    - ./inputs:/opt/biplatform/inputs
+    # Airflow logs (persisted across restarts)
+    - airflow-logs:/opt/airflow/logs
+
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+# ============================================================================
+services:
+
+  # --------------------------------------------------------------------------
+  # Metadata database for Airflow
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # One-time initialisation: migrate DB + create admin user
+  # Run manually: docker compose up airflow-init
+  # --------------------------------------------------------------------------
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname Admin \
+          --role Admin \
+          --email admin@example.com || true
+        echo "✅ Airflow initialised — open http://localhost:8080 (admin / admin)"
+    restart: on-failure
+
+  # --------------------------------------------------------------------------
+  # Scheduler — picks up DAGs and triggers task execution
+  # --------------------------------------------------------------------------
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Webserver — UI on http://localhost:8080
+  # --------------------------------------------------------------------------
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+# ============================================================================
+volumes:
+  postgres-db:
+  airflow-logs:

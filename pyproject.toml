@@ -16,12 +16,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "ruff>=0.11",
-    "mypy>=1.15",
-    "pytest>=8.3",
-    "pytest-cov>=6.1",
-]
+dev = ["ruff>=0.11", "mypy>=1.15", "pytest>=8.3", "pytest-cov>=6.1"]
 
 # ---------------------------------------------------------------------------
 # uv
@@ -36,7 +31,7 @@ target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
-select = [
+extend-select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
     "F",   # pyflakes
@@ -51,7 +46,7 @@ select = [
     "TID", # flake8-tidy-imports
     "RUF", # ruff-specific rules
 ]
-ignore = [
+extend-ignore = [
     "ANN101", # self/cls type annotation not required
     "ANN102",
 ]
@@ -80,12 +75,7 @@ exclude = ["airflow/dags/"]
 
 # Third-party libraries without stubs
 [[tool.mypy.overrides]]
-module = [
-    "airflow.*",
-    "dbt.*",
-    "snowflake.*",
-    "pendulum.*",
-]
+module = ["airflow.*", "dbt.*", "snowflake.*", "pendulum.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from airflow.utils.source_reader import (
+from pipeline.utils.source_reader import (
     ALL_TABLES,
     EXPECTED_COLUMNS,
     BatchSummary,
@@ -99,7 +99,7 @@ class TestReadBatch:
             read_batch(date(2099, 1, 1), "PATIENT")
 
     def test_logs_row_count(self, caplog: pytest.LogCaptureFixture) -> None:
-        with caplog.at_level(logging.INFO, logger="airflow.utils.source_reader"):
+        with caplog.at_level(logging.INFO, logger="pipeline.utils.source_reader"):
             read_batch(FIRST_BATCH, "PATIENT")
         assert any("PATIENT" in msg for msg in caplog.messages)
 

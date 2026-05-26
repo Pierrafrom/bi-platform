@@ -2,7 +2,7 @@
 
 Configure once at the entry point of a DAG or script:
 
-    from airflow.utils.logging_config import configure_logging
+    from pipeline.utils.logging_config import configure_logging
     configure_logging(level=logging.DEBUG)
 
 Then in every module, just get the module logger:
@@ -18,7 +18,7 @@ import sys
 from typing import TextIO
 
 # Log format — machine-parseable and human-readable:
-#   2026-05-26 14:32:01 | INFO | airflow.dags.load_staging | Loaded 643 rows
+#   2026-05-26 14:32:01 | INFO | pipeline.dags.load_staging | Loaded 643 rows
 _FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
