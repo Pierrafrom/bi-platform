@@ -25,7 +25,7 @@ repos:
   # Python: ruff (lint + format — replaces flake8, isort, black)
   # ---------------------------------------------------------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.12
+    rev: v0.15.14
     hooks:
       - id: ruff                       # Lint
         args: ["--fix"]
@@ -38,7 +38,7 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        files: ^airflow/utils/       # dags/ excluded — imports airflow at runtime
+        files: ^pipeline/utils/      # dags/ excluded — imports airflow at runtime
         additional_dependencies:
           - "types-python-dateutil"
 
