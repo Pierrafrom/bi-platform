@@ -32,14 +32,14 @@ jobs:
         run: uv sync --only-dev
 
       - name: Ruff lint
-        run: uv run ruff check airflow/ tests/ --output-format=github
+        run: uv run ruff check airflow/ pipeline/ tests/ --output-format=github
 
       - name: Ruff format check
-        run: uv run ruff format --check airflow/ tests/
+        run: uv run ruff format --check airflow/ pipeline/ tests/
 
       - name: Mypy
-        # dags/ excluded — imports airflow which is not installed in dev
-        run: uv run mypy airflow/utils/
+        # airflow/dags/ excluded (see pyproject.toml [tool.mypy] exclude)
+        run: uv run mypy pipeline/
 
   # ---------------------------------------------------------------------------
   # Python tests

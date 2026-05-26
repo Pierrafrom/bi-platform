@@ -52,7 +52,7 @@ extend-ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["bi_platform"]
+known-first-party = ["pipeline"]
 
 [tool.ruff.format]
 quote-style = "double"
