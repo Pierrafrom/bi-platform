@@ -15,7 +15,7 @@ dependencies = [
     "pendulum>=3.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "ruff>=0.11",
     "mypy>=1.15",
@@ -27,12 +27,6 @@ dev = [
 # uv
 # ---------------------------------------------------------------------------
 [tool.uv]
-dev-dependencies = [
-    "ruff>=0.11",
-    "mypy>=1.15",
-    "pytest>=8.3",
-    "pytest-cov>=6.1",
-]
 
 # ---------------------------------------------------------------------------
 # ruff — linting + formatting (replaces flake8 + isort + black)
