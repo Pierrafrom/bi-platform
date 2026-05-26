@@ -18,10 +18,10 @@ flowchart LR
     STG["STG"]
 
     subgraph WRK["WRK — 4 étapes"]
-        E1["① Contrôle qualité\nRègles du fichier CI\nObligatoires · Types · Formats"]
-        E2["② Dédoublonnage\nPK · Doublons métier\nConservation de la ligne la plus récente"]
-        E3["③ Normalisation\nTempérature C/F → °C\nTrue/False → 1/0\nDates · Casses"]
-        E4["④ Résolution surrogate keys\nLookup R_PART sur SRC_ID+SRC_TYP\nLookup R_MEDC sur CD+CATG+MARQUE"]
+        E1["1 - Contrôle qualité\nRègles du fichier CI\nObligatoires · Types · Formats"]
+        E2["2 - Dédoublonnage\nPK · Doublons métier\nConservation de la ligne la plus récente"]
+        E3["3 - Normalisation\nTempérature C/F → °C\nTrue/False → 1/0\nDates · Casses"]
+        E4["4 - Résolution surrogate keys\nLookup R_PART sur SRC_ID+SRC_TYP\nLookup R_MEDC sur CD+CATG+MARQUE"]
         E1 --> E2 --> E3 --> E4
     end
 
@@ -41,24 +41,24 @@ flowchart LR
 
 Chaque table WRK contient les colonnes source STG **+ les colonnes de contrôle** :
 
-| Colonne | Type | Valeurs | Description |
-| --- | --- | --- | --- |
-| `WRK_STTS_CD` | VARCHAR(3) | `OK` / `REJ` / `ENC` | Statut de la ligne après traitement |
-| `REJ_COD` | VARCHAR(20) | voir table ci-dessous | Code motif de rejet (null si OK) |
-| `REJ_DSC` | VARCHAR(500) | texte libre | Description détaillée du rejet |
-| `BATCH_DT` | DATE | — | Date du batch en cours |
-| `EXEC_ID` | INTEGER | — | FK → `TCH.T_SUIV_TRMT` |
+| Colonne       | Type         | Valeurs               | Description                         |
+| ------------- | ------------ | --------------------- | ----------------------------------- |
+| `WRK_STTS_CD` | VARCHAR(3)   | `OK` / `REJ` / `ENC`  | Statut de la ligne après traitement |
+| `REJ_COD`     | VARCHAR(20)  | voir table ci-dessous | Code motif de rejet (null si OK)    |
+| `REJ_DSC`     | VARCHAR(500) | texte libre           | Description détaillée du rejet      |
+| `BATCH_DT`    | DATE         | —                     | Date du batch en cours              |
+| `EXEC_ID`     | INTEGER      | —                     | FK → `TCH.T_SUIV_TRMT`              |
 
 ### Codes de rejet (`REJ_COD`)
 
-| Code | Étape | Description |
-| --- | --- | --- |
-| `NULL_MANDATORY` | ① Qualité | Colonne obligatoire nulle ou vide |
-| `WRONG_TYPE` | ① Qualité | Type de donnée incorrect (ex. texte dans un INTEGER) |
-| `WRONG_FORMAT` | ① Qualité | Format invalide (ex. date hors plage, indicatif téléphone) |
-| `DUPLICATE_PK` | ② Dédup | Doublon sur la clé primaire métier |
-| `FK_NOT_FOUND` | ④ SK | Clé étrangère introuvable dans la table de référence |
-| `NORM_FAILURE` | ③ Normalisation | Valeur impossible à normaliser (ex. unité température inconnue) |
+| Code             | Étape             | Description                                                     |
+| ---------------- | ----------------- | --------------------------------------------------------------- |
+| `NULL_MANDATORY` | 1 - Qualité       | Colonne obligatoire nulle ou vide                               |
+| `WRONG_TYPE`     | 1 - Qualité       | Type de donnée incorrect (ex. texte dans un INTEGER)            |
+| `WRONG_FORMAT`   | 1 - Qualité       | Format invalide (ex. date hors plage, indicatif téléphone)      |
+| `DUPLICATE_PK`   | 2 - Dédup         | Doublon sur la clé primaire métier                              |
+| `FK_NOT_FOUND`   | 4 - SK            | Clé étrangère introuvable dans la table de référence            |
+| `NORM_FAILURE`   | 3 - Normalisation | Valeur impossible à normaliser (ex. unité température inconnue) |
 
 ---
 
@@ -66,88 +66,88 @@ Chaque table WRK contient les colonnes source STG **+ les colonnes de contrôle*
 
 ### CHAMBRE — chargement full
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `NO_CHAMBRE` | ✅ PK | Non nul, entier positif |
-| `NOM_CHAMBRE` | ✅ | Non nul |
-| `PRIX_JOUR` | ✅ | Non nul, > 0 |
-| `DT_CREATION` | ✅ | Date valide |
+| Colonne       | Obligatoire | Règle                   |
+| ------------- | ----------- | ----------------------- |
+| `NO_CHAMBRE`  | Oui (PK)    | Non nul, entier positif |
+| `NOM_CHAMBRE` | Oui         | Non nul                 |
+| `PRIX_JOUR`   | Oui         | Non nul, > 0            |
+| `DT_CREATION` | Oui         | Date valide             |
 
 ### MEDICAMENT — chargement full
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `CD_MEDICAMENT` | ✅ PK | Non nul |
-| `CATG_MEDICAMENT` | ✅ PK | Non nul |
-| `MARQUE_FABRI` | ✅ PK | Non nul |
+| Colonne           | Obligatoire | Règle   |
+| ----------------- | ----------- | ------- |
+| `CD_MEDICAMENT`   | Oui (PK)    | Non nul |
+| `CATG_MEDICAMENT` | Oui (PK)    | Non nul |
+| `MARQUE_FABRI`    | Oui (PK)    | Non nul |
 
 ### PERSONNEL — chargement full
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `ID_PERSONNEL` | ✅ PK | Non nul, entier positif |
-| `NOM_PERSONNEL` | ✅ | Non nul |
-| `PRENOM_PERSONNEL` | ✅ | Non nul |
-| `FONCTION_PERSONNEL` | ✅ | Non nul |
-| `TS_DEBUT_ACTIVITE` | ✅ | Timestamp valide |
-| `TS_CREATION_PERSONNEL` | ✅ | Timestamp valide |
-| `TS_MAJ_PERSONNEL` | ✅ | Timestamp valide |
-| `CD_STATUT_PERSONNEL` | ✅ | Non nul |
+| Colonne                 | Obligatoire | Règle                   |
+| ----------------------- | ----------- | ----------------------- |
+| `ID_PERSONNEL`          | Oui (PK)    | Non nul, entier positif |
+| `NOM_PERSONNEL`         | Oui         | Non nul                 |
+| `PRENOM_PERSONNEL`      | Oui         | Non nul                 |
+| `FONCTION_PERSONNEL`    | Oui         | Non nul                 |
+| `TS_DEBUT_ACTIVITE`     | Oui         | Timestamp valide        |
+| `TS_CREATION_PERSONNEL` | Oui         | Timestamp valide        |
+| `TS_MAJ_PERSONNEL`      | Oui         | Timestamp valide        |
+| `CD_STATUT_PERSONNEL`   | Oui         | Non nul                 |
 
 ### PATIENT — chargement delta
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `ID_PATIENT` | ✅ PK | Non nul, entier positif |
-| `NOM_PATIENT` | ✅ | Non nul |
-| `PRENOM_PATIENT` | ✅ | Non nul |
-| `TS_CREATION_PATIENT` | ✅ | Timestamp valide |
-| `TS_MAJ_PATIENT` | ✅ | Timestamp valide |
+| Colonne               | Obligatoire | Règle                   |
+| --------------------- | ----------- | ----------------------- |
+| `ID_PATIENT`          | Oui (PK)    | Non nul, entier positif |
+| `NOM_PATIENT`         | Oui         | Non nul                 |
+| `PRENOM_PATIENT`      | Oui         | Non nul                 |
+| `TS_CREATION_PATIENT` | Oui         | Timestamp valide        |
+| `TS_MAJ_PATIENT`      | Oui         | Timestamp valide        |
 
 ### CONSULTATION — chargement delta
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `ID_CONSULT` | ✅ PK | Non nul, entier positif |
-| `ID_PERSONNEL` | ✅ | Non nul, doit exister dans WRK_PERSONNEL |
-| `ID_PATIENT` | ✅ | Non nul, doit exister dans WRK_PATIENT |
-| `TS_DEBUT_CONSULT` | ✅ | Timestamp valide |
-| `TS_FIN_CONSULT` | ✅ | Timestamp valide, > `TS_DEBUT_CONSULT` |
-| `POIDS_PATIENT` | ✅ | Non nul, > 0 |
-| `INDIC_DIABETE` | — | Si renseigné : `True` ou `False` |
-| `INDIC_HOSPI` | — | Si renseigné : `True` ou `False` |
+| Colonne            | Obligatoire | Règle                                    |
+| ------------------ | ----------- | ---------------------------------------- |
+| `ID_CONSULT`       | Oui (PK)    | Non nul, entier positif                  |
+| `ID_PERSONNEL`     | Oui         | Non nul, doit exister dans WRK_PERSONNEL |
+| `ID_PATIENT`       | Oui         | Non nul, doit exister dans WRK_PATIENT   |
+| `TS_DEBUT_CONSULT` | Oui         | Timestamp valide                         |
+| `TS_FIN_CONSULT`   | Oui         | Timestamp valide, > `TS_DEBUT_CONSULT`   |
+| `POIDS_PATIENT`    | Oui         | Non nul, > 0                             |
+| `INDIC_DIABETE`    | —           | Si renseigné : `True` ou `False`         |
+| `INDIC_HOSPI`      | —           | Si renseigné : `True` ou `False`         |
 
 ### TRAITEMENT — chargement delta
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `ID_TRAITEMENT` | ✅ PK | Non nul |
-| `CD_MEDICAMENT` | ✅ | Non nul, combinaison (CD, CATG, MARQUE) doit exister dans WRK_MEDICAMENT |
-| `CATG_MEDICAMENT` | ✅ | Non nul |
-| `MARQUE_FABRI` | ✅ | Non nul |
-| `DSC_POSOLOGIE` | ✅ | Non nul |
-| `ID_CONSULT` | ✅ | Non nul, doit exister dans WRK_CONSULTATION |
-| `TS_CREATION_TRAITEMENT` | ✅ | Timestamp valide |
+| Colonne                  | Obligatoire | Règle                                                                    |
+| ------------------------ | ----------- | ------------------------------------------------------------------------ |
+| `ID_TRAITEMENT`          | Oui (PK)    | Non nul                                                                  |
+| `CD_MEDICAMENT`          | Oui         | Non nul, combinaison (CD, CATG, MARQUE) doit exister dans WRK_MEDICAMENT |
+| `CATG_MEDICAMENT`        | Oui         | Non nul                                                                  |
+| `MARQUE_FABRI`           | Oui         | Non nul                                                                  |
+| `DSC_POSOLOGIE`          | Oui         | Non nul                                                                  |
+| `ID_CONSULT`             | Oui         | Non nul, doit exister dans WRK_CONSULTATION                              |
+| `TS_CREATION_TRAITEMENT` | Oui         | Timestamp valide                                                         |
 
 ### HOSPITALISATION — chargement delta
 
-| Colonne | Obligatoire | Règle |
-| --- | --- | --- |
-| `ID_HOSPI` | ✅ PK | Non nul |
-| `ID_CONSULT` | ✅ | Non nul, doit exister dans WRK_CONSULTATION, `INDIC_HOSPI = True` |
-| `NO_CHAMBRE` | ✅ | Non nul, doit exister dans WRK_CHAMBRE |
-| `TS_DEBUT_HOSPI` | ✅ | Timestamp valide |
-| `ID_PERSONNEL_RESP` | ✅ | Non nul, doit exister dans WRK_PERSONNEL |
+| Colonne             | Obligatoire | Règle                                                             |
+| ------------------- | ----------- | ----------------------------------------------------------------- |
+| `ID_HOSPI`          | Oui (PK)    | Non nul                                                           |
+| `ID_CONSULT`        | Oui         | Non nul, doit exister dans WRK_CONSULTATION, `INDIC_HOSPI = True` |
+| `NO_CHAMBRE`        | Oui         | Non nul, doit exister dans WRK_CHAMBRE                            |
+| `TS_DEBUT_HOSPI`    | Oui         | Timestamp valide                                                  |
+| `ID_PERSONNEL_RESP` | Oui         | Non nul, doit exister dans WRK_PERSONNEL                          |
 
 ---
 
-## Normalisation (étape ③)
+## Normalisation (étape 3)
 
-| Table | Colonne STG | Transformation | Colonne WRK |
-| --- | --- | --- | --- |
+| Table        | Colonne STG                  | Transformation                             | Colonne WRK   |
+| ------------ | ---------------------------- | ------------------------------------------ | ------------- |
 | CONSULTATION | `TEMP_PATIENT` + `UNIT_TEMP` | Si `UNIT_TEMP = 'F'` : `(TEMP - 32) * 5/9` | `PATN_TEMP_C` |
-| CONSULTATION | `INDIC_DIABETE` | `'True'` → 1, sinon 0 | `DIBT_IND` |
-| CONSULTATION | `INDIC_HOSPI` | `'True'` → 1, sinon 0 | `HOSP_IND` |
+| CONSULTATION | `INDIC_DIABETE`              | `'True'` → 1, sinon 0                      | `DIBT_IND`    |
+| CONSULTATION | `INDIC_HOSPI`                | `'True'` → 1, sinon 0                      | `HOSP_IND`    |
 
 ---
 
