@@ -1,0 +1,100 @@
+[project]
+name = "bi-platform"
+version = "0.1.0"
+description = "NF26 — Hospital BI platform: Snowflake DWH + dbt + Airflow + Power BI"
+requires-python = ">=3.12"
+dependencies = [
+    # Orchestration
+    "apache-airflow[snowflake]>=2.10",
+    # dbt with Snowflake adapter
+    "dbt-snowflake>=1.9",
+    # Snowflake connector (shared by Airflow provider + dbt)
+    "snowflake-connector-python>=3.12",
+    # Utilities
+    "python-dotenv>=1.0",
+    "pendulum>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "pytest-cov>=6.1",
+]
+
+# ---------------------------------------------------------------------------
+# uv
+# ---------------------------------------------------------------------------
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "pytest-cov>=6.1",
+]
+
+# ---------------------------------------------------------------------------
+# ruff — linting + formatting (replaces flake8 + isort + black)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "ANN", # flake8-annotations (enforce type hints)
+    "LOG", # flake8-logging
+    "G",   # flake8-logging-format (no f-strings in log calls)
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "ANN101", # self/cls type annotation not required
+    "ANN102",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["bi_platform"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ---------------------------------------------------------------------------
+# mypy — strict static type checking
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_unreachable = true
+pretty = true
+show_error_context = true
+
+# Third-party libraries without stubs
+[[tool.mypy.overrides]]
+module = [
+    "airflow.*",
+    "dbt.*",
+    "snowflake.*",
+    "pendulum.*",
+]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"

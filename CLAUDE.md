@@ -207,7 +207,71 @@ dbt docs generate && dbt docs serve   # browse lineage locally
 
 ## Language policy
 
-- **SQL / dbt model names, column aliases**: English (snake_case)
-- **Source column names**: keep original French names as-is in staging, rename to English in intermediate/mart layers
-- **dbt descriptions, comments**: French is acceptable (project audience is French-speaking)
-- **Documentation and reports**: French
+- **All code** (identifiers, comments, docstrings): **English**
+- **Source column names**: keep original French names in staging (e.g. `ID_PATIENT`, `TS_DEBUT_CONSULT`), rename to English snake_case in intermediate/mart layers
+- **dbt descriptions, Power BI labels, reports**: French (project audience is French-speaking)
+
+---
+
+## Coding standards
+
+These rules apply to all Python written in this repo (Airflow DAGs, utilities, tests).
+See also `.github/copilot-instructions.md` for the full reference (used by Copilot in IDE).
+
+### Python environment
+
+```bash
+uv sync                              # create/update venv from pyproject.toml
+uv run ruff check airflow/ tests/    # lint (replaces flake8 + isort)
+uv run ruff format airflow/ tests/   # format (replaces black)
+uv run mypy airflow/                 # strict type checking
+uv run pytest                        # run tests
+```
+
+- Python **3.12** (pinned in `.python-version`)
+- All dependencies declared in `pyproject.toml`; managed with **uv** — never `pip install` directly
+- `profiles.yml` (dbt Snowflake creds) is gitignored — use environment variables loaded from `.env`
+
+### Type annotations
+
+Every function must have full parameter and return type annotations. `mypy --strict` must pass with zero errors.
+
+```python
+# ✅
+def load_batch(batch_date: date, table: str) -> int: ...
+
+# ❌
+def load_batch(batch_date, table): ...
+```
+
+### Logging — never print()
+
+One module-level logger per file. Use `%s` positional args — never f-strings in log calls (ruff rule `G`).
+
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+logger.debug("Parsing row %d of %s", row_num, table)
+logger.info("Loaded %d rows into %s.%s", n, schema, table)
+logger.warning("Null value in column %s at row %d", col, i)
+logger.error("Failed to load %s: %s", table, exc)
+```
+
+Each DAG / pipeline run must log: start time, batch date, rows loaded per table, total duration, rejected rows.
+Logging is configured once at the entry point — never in library modules.
+
+### Design rules
+
+- **Single responsibility**: one function does one thing. If you need "and" to describe it, split it.
+- **DRY**: extract any logic that appears more than once into a shared helper.
+- **Google-style docstrings** on every public function, class, and module.
+- **No bare `except`** — always catch specific exceptions.
+
+### SQL / dbt
+
+- Keywords `UPPERCASE`, one column per line, trailing comma style
+- CTEs over subqueries — name each CTE after what it represents
+- Always use `{{ ref() }}` / `{{ source() }}` — never hardcode schema names
+- No `SELECT *` in intermediate or mart models
+- No business logic in staging models (raw ingestion only)
