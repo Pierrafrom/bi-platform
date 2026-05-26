@@ -1,0 +1,77 @@
+version: 2
+
+sources:
+  - name: hospital
+    description: >
+      Raw hospital data loaded daily into the Snowflake Staging layer.
+      One folder per day: BDD_HOSPITAL_YYYYMMDD. Delimiter: semicolon. Encoding: UTF-8.
+    database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+    schema: staging
+
+    tables:
+      - name: patient
+        description: "Master patient records."
+        columns:
+          - name: ID_PATIENT
+            description: "Unique patient identifier (source PK)."
+            tests: [not_null, unique]
+          - name: NOM_PATIENT
+            description: "Patient last name."
+            tests: [not_null]
+          - name: NUM_SECU
+            description: "French social security number."
+            tests: [not_null]
+
+      - name: personnel
+        description: "Medical and administrative staff. One row per shift."
+        columns:
+          - name: ID_PERSONNEL
+            description: "Staff member identifier."
+            tests: [not_null]
+
+      - name: chambre
+        description: "Hospital room catalogue."
+        columns:
+          - name: NO_CHAMBRE
+            description: "Room number (source PK)."
+            tests: [not_null, unique]
+
+      - name: medicament
+        description: "Medication catalogue (slowly changing reference)."
+        columns:
+          - name: CD_MEDICAMENT
+            description: "Medication code (source PK)."
+            tests: [not_null, unique]
+
+      - name: consultation
+        description: "One row per patient visit — central transactional table."
+        columns:
+          - name: ID_CONSULT
+            description: "Consultation identifier (source PK)."
+            tests: [not_null, unique]
+          - name: ID_PATIENT
+            description: "FK → patient.ID_PATIENT."
+            tests: [not_null]
+          - name: ID_PERSONNEL
+            description: "FK → personnel.ID_PERSONNEL."
+            tests: [not_null]
+
+      - name: traitement
+        description: "Treatment prescribed during a consultation."
+        columns:
+          - name: ID_TRAITEMENT
+            description: "Treatment identifier (source PK)."
+            tests: [not_null, unique]
+          - name: ID_CONSULT
+            description: "FK → consultation.ID_CONSULT."
+            tests: [not_null]
+
+      - name: hospitalisation
+        description: "Inpatient stay linked to a consultation."
+        columns:
+          - name: ID_HOSPI
+            description: "Hospitalisation identifier (source PK)."
+            tests: [not_null, unique]
+          - name: ID_CONSULT_hospi
+            description: "FK → consultation.ID_CONSULT."
+            tests: [not_null]

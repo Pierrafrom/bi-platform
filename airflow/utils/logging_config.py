@@ -17,8 +17,8 @@ import logging
 import sys
 from typing import TextIO
 
-# Log format — designed to be machine-parseable and human-readable:
-#   2026-05-26 14:32:01,123 | INFO     | airflow.dags.load_staging | Loaded 643 rows into STAGING.PATIENT
+# Log format — machine-parseable and human-readable:
+#   2026-05-26 14:32:01 | INFO | airflow.dags.load_staging | Loaded 643 rows
 _FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 

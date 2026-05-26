@@ -81,6 +81,8 @@ warn_unused_ignores = true
 warn_unreachable = true
 pretty = true
 show_error_context = true
+# DAGs import airflow at runtime — excluded from static analysis in dev
+exclude = ["airflow/dags/"]
 
 # Third-party libraries without stubs
 [[tool.mypy.overrides]]

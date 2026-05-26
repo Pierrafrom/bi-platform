@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_patient
+    description: >
+      Cleaned and renamed patient records from the Staging layer.
+      Type casting only — no business logic.
+    columns:
+      - name: patient_id
+        description: "Unique patient identifier (source: ID_PATIENT)."
+        tests: [not_null, unique]
+      - name: last_name
+        description: "Patient last name."
+        tests: [not_null]
+      - name: first_name
+        description: "Patient first name."
+        tests: [not_null]
+      - name: social_security_number
+        description: "French social security number."
+        tests: [not_null]
+      - name: birth_date
+        description: "Date of birth, cast to DATE."
+      - name: birth_city
+        description: "City of birth."
+      - name: birth_country
+        description: "Country of birth."
+      - name: phone_number
+        description: "Phone number."
+      - name: phone_country_code
+        description: "Country dial prefix."
+      - name: street_number
+        description: "Street number."
+      - name: street_name
+        description: "Street name."
+      - name: address_complement
+        description: "Address complement (apartment, floor, etc.)."
+      - name: postal_code
+        description: "Postal / zip code."
+      - name: city
+        description: "City of residence."
+      - name: country
+        description: "Country of residence."
+      - name: created_at
+        description: "Row creation timestamp in the source system."
+        tests: [not_null]
+      - name: updated_at
+        description: "Last update timestamp in the source system."
+        tests: [not_null]
