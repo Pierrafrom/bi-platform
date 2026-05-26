@@ -13,12 +13,12 @@ Il répond à la question : *« Que faire des données invalides reçues du syst
 
 ### Pourquoi ne pas simplement ignorer les erreurs ?
 
-| Approche naïve | Approche REJ |
-| --- | --- |
-| Lignes invalides silencieusement ignorées | Toutes les erreurs sont visibles et quantifiées |
+| Approche naïve                                       | Approche REJ                                     |
+| ---------------------------------------------------- | ------------------------------------------------ |
+| Lignes invalides silencieusement ignorées            | Toutes les erreurs sont visibles et quantifiées  |
 | Impossible de savoir combien de données sont perdues | KPI de qualité : taux de rejet par table / batch |
-| Pas de correction possible | Correction + recyclage organisé |
-| Audit impossible | Preuve de réception avec motif d'exclusion |
+| Pas de correction possible                           | Correction + recyclage organisé                  |
+| Audit impossible                                     | Preuve de réception avec motif d'exclusion       |
 
 ---
 
@@ -52,14 +52,14 @@ erDiagram
 
 ## Codes de rejet
 
-| Code | Étape WRK | Signification | Action corrective |
-| --- | --- | --- | --- |
-| `NULL_MANDATORY` | ① Qualité | Colonne obligatoire nulle | Demander correction au système source |
-| `WRONG_TYPE` | ① Qualité | Valeur non castable vers le type cible | Vérifier le contrat d'interface |
-| `WRONG_FORMAT` | ① Qualité | Format invalide (date, indicatif tel) | Règle de nettoyage ou correction source |
-| `DUPLICATE_PK` | ② Dédup | Doublon sur PK — ligne conservée est la plus récente | Analyser pourquoi le source envoie des doublons |
-| `FK_NOT_FOUND` | ④ SK | Clé étrangère absente de la référence | Vérifier l'ordre de chargement des tables |
-| `NORM_FAILURE` | ③ Normalisation | Valeur impossible à normaliser | Ex. `UNIT_TEMP` ni `C` ni `F` |
+| Code             | Étape WRK       | Signification                                        | Action corrective                               |
+| ---------------- | --------------- | ---------------------------------------------------- | ----------------------------------------------- |
+| `NULL_MANDATORY` | ① Qualité       | Colonne obligatoire nulle                            | Demander correction au système source           |
+| `WRONG_TYPE`     | ① Qualité       | Valeur non castable vers le type cible               | Vérifier le contrat d'interface                 |
+| `WRONG_FORMAT`   | ① Qualité       | Format invalide (date, indicatif tel)                | Règle de nettoyage ou correction source         |
+| `DUPLICATE_PK`   | ② Dédup         | Doublon sur PK — ligne conservée est la plus récente | Analyser pourquoi le source envoie des doublons |
+| `FK_NOT_FOUND`   | ④ SK            | Clé étrangère absente de la référence                | Vérifier l'ordre de chargement des tables       |
+| `NORM_FAILURE`   | ③ Normalisation | Valeur impossible à normaliser                       | Ex. `UNIT_TEMP` ni `C` ni `F`                   |
 
 ---
 

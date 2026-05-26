@@ -9,22 +9,22 @@ Chaque batch quotidien est conservé tel quel — aucune transformation, aucun f
 
 ### Pourquoi c'est indispensable
 
-| Besoin | Ce que l'OBS permet |
-| --- | --- |
+| Besoin             | Ce que l'OBS permet                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
 | **Rejeu de batch** | Si un bug est détecté dans WRK ou SOC, on repart de l'OBS sans redemander les fichiers sources |
-| **Audit** | Preuve de ce qui a été reçu à une date donnée (conformité, litige) |
-| **Débogage** | Comparer ce qui était dans STG avec ce qui est arrivé dans SOC |
-| **RGPD** | Traçabilité de l'origine de chaque donnée personnelle |
+| **Audit**          | Preuve de ce qui a été reçu à une date donnée (conformité, litige)                             |
+| **Débogage**       | Comparer ce qui était dans STG avec ce qui est arrivé dans SOC                                 |
+| **RGPD**           | Traçabilité de l'origine de chaque donnée personnelle                                          |
 
 ### Durée d'historisation (`DUREE_HISTO`)
 
 La rétention OBS est **configurable par table** selon la sensibilité des données :
 
-| Table | Durée recommandée | Raison |
-| --- | --- | --- |
-| PATIENT, CONSULTATION | 13 mois | Données médicales — recouvrement annuel |
-| TRAITEMENT, HOSPITALISATION | 13 mois | Idem |
-| CHAMBRE, MEDICAMENT, PERSONNEL | 3 mois | Référentiels — changent peu |
+| Table                          | Durée recommandée | Raison                                  |
+| ------------------------------ | ----------------- | --------------------------------------- |
+| PATIENT, CONSULTATION          | 13 mois           | Données médicales — recouvrement annuel |
+| TRAITEMENT, HOSPITALISATION    | 13 mois           | Idem                                    |
+| CHAMBRE, MEDICAMENT, PERSONNEL | 3 mois            | Référentiels — changent peu             |
 
 Les lignes expirées sont purgées par un job Airflow dédié (`purge_obs`).
 
@@ -34,11 +34,11 @@ Les lignes expirées sont purgées par un job Airflow dédié (`purge_obs`).
 
 Chaque table OBS = table STG correspondante **+ 3 colonnes d'audit** :
 
-| Colonne ajoutée | Type | Description |
-| --- | --- | --- |
-| `BATCH_DT` | DATE | Date du batch source (`YYYYMMDD` du nom de fichier) |
-| `LOAD_DTTM` | TIMESTAMP | Horodatage du chargement dans OBS |
-| `EXEC_ID` | INTEGER | FK → `TCH.T_SUIV_TRMT.EXEC_ID` |
+| Colonne ajoutée | Type      | Description                                         |
+| --------------- | --------- | --------------------------------------------------- |
+| `BATCH_DT`      | DATE      | Date du batch source (`YYYYMMDD` du nom de fichier) |
+| `LOAD_DTTM`     | TIMESTAMP | Horodatage du chargement dans OBS                   |
+| `EXEC_ID`       | INTEGER   | FK → `TCH.T_SUIV_TRMT.EXEC_ID`                      |
 
 La PK OBS = **PK source + `BATCH_DT`** (une ligne par batch, pas de déduplication).
 
