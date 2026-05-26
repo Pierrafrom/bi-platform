@@ -63,7 +63,7 @@ jobs:
         run: uv sync --only-dev
 
       - name: Run pytest
-        run: uv run pytest --tb=short -q
+        run: uv run pytest
 
   # ---------------------------------------------------------------------------
   # dbt: compile check (no Snowflake connection needed)
@@ -73,23 +73,34 @@ jobs:
     name: dbt compile
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: >
-      github.event_name == 'pull_request' &&
-      contains(join(github.event.pull_request.changed_files, ','), 'dbt/')
+    # Run on PRs only; detect dbt/ changes via git diff against main
+    if: github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # needed for git diff against base branch
+
+      - name: Check for dbt changes
+        id: dbt_changed
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^dbt/' \
+            && echo "changed=true" >> "$GITHUB_OUTPUT" \
+            || echo "changed=false" >> "$GITHUB_OUTPUT"
 
       - name: Set up uv
+        if: steps.dbt_changed.outputs.changed == 'true'
         uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
           enable-cache: true
 
       - name: Install dbt
+        if: steps.dbt_changed.outputs.changed == 'true'
         run: uv sync
 
       - name: Write dbt profiles
+        if: steps.dbt_changed.outputs.changed == 'true'
         # Uses a dummy Snowflake profile — compile only, no connection made
         run: |
           mkdir -p ~/.dbt
@@ -110,9 +121,11 @@ jobs:
           EOF
 
       - name: dbt deps
+        if: steps.dbt_changed.outputs.changed == 'true'
         working-directory: dbt/
         run: uv run dbt deps
 
       - name: dbt compile
+        if: steps.dbt_changed.outputs.changed == 'true'
         working-directory: dbt/
         run: uv run dbt compile --profiles-dir ~/.dbt

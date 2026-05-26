@@ -154,10 +154,10 @@ Central join key: `ID_CONSULT` links CONSULTATION → TRAITEMENT → HOSPITALISA
 
 ```bash
 # Python / linting
-uv run ruff check airflow/ tests/     # lint
-uv run ruff format airflow/ tests/    # format
-uv run mypy airflow/                  # type check
-uv run pytest                         # tests
+uv run ruff check airflow/ pipeline/ tests/     # lint
+uv run ruff format airflow/ pipeline/ tests/    # format
+uv run mypy pipeline/                           # type check
+uv run pytest                                   # tests
 
 # dbt
 dbt debug                             # test Snowflake connection

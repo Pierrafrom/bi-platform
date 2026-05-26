@@ -72,14 +72,14 @@ def _make_stream_handler(stream: TextIO, formatter: logging.Formatter) -> loggin
 
 
 def _make_file_handler(path: str, formatter: logging.Formatter) -> logging.FileHandler:
-    """Create a rotating-friendly file handler.
+    """Create a plain file handler (append mode).
 
     Args:
         path: Absolute or relative path to the log file. Parent directory must exist.
         formatter: Log record formatter.
 
     Returns:
-        Configured FileHandler (append mode).
+        Configured FileHandler writing in append mode (UTF-8).
     """
     handler = logging.FileHandler(path, encoding="utf-8")
     handler.setFormatter(formatter)

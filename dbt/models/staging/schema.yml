@@ -16,8 +16,7 @@ models:
         description: "Patient first name."
         tests: [not_null]
       - name: social_security_number
-        description: "French social security number."
-        tests: [not_null]
+        description: "French social security number (nullable — not always provided)."
       - name: birth_date
         description: "Date of birth, cast to DATE."
       - name: birth_city

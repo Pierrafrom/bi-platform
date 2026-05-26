@@ -23,11 +23,11 @@ sources:
             tests: [not_null]
 
       - name: personnel
-        description: "Medical and administrative staff. One row per shift."
+        description: "Medical and administrative staff. One row per staff member."
         columns:
           - name: ID_PERSONNEL
-            description: "Staff member identifier."
-            tests: [not_null]
+            description: "Staff member identifier (source PK)."
+            tests: [not_null, unique]
 
       - name: chambre
         description: "Hospital room catalogue."
@@ -40,8 +40,10 @@ sources:
         description: "Medication catalogue (slowly changing reference)."
         columns:
           - name: CD_MEDICAMENT
-            description: "Medication code (source PK)."
-            tests: [not_null, unique]
+            description: >
+              Medication code. Part of the composite PK
+              (CD_MEDICAMENT, CATG_MEDICAMENT, MARQUE_FABRI) — not unique alone.
+            tests: [not_null]
 
       - name: consultation
         description: "One row per patient visit — central transactional table."

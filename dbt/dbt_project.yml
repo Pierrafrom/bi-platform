@@ -21,13 +21,25 @@ models:
       +materialized: view
       +tags: ["staging"]
 
-    # Intermediate — quality, unification, joins (Travail layer)
+    # Intermediate — three sub-layers each with their own Snowflake schema
     intermediate:
-      +schema: travail
-      +materialized: view
-      +tags: ["travail"]
+      # OBS: raw archive of each daily batch (source of truth for replay)
+      obs:
+        +schema: obs
+        +materialized: table
+        +tags: ["obs"]
+      # WRK: quality control, dedup, normalisation (Travail layer)
+      wrk:
+        +schema: wrk
+        +materialized: table
+        +tags: ["wrk"]
+      # REJ: rejected rows with error code and reason
+      rej:
+        +schema: rej
+        +materialized: table
+        +tags: ["rej"]
 
-    # Marts — fact + dimension tables for Power BI (Socle/Vue layer)
+    # Marts — fact + dimension tables for Power BI (Socle layer)
     marts:
       +schema: socle
       +materialized: table
