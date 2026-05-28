@@ -123,9 +123,9 @@ erDiagram
         VARCHAR    UNIT_TEMP
         INTEGER    TENSION_PATIENT
         VARCHAR    DSC_PATHO
-        VARCHAR    INDIC_DIABETE
+        BOOLEAN    INDIC_DIABETE
         INTEGER    ID_TRAITEMENT
-        VARCHAR    INDIC_HOSPI
+        BOOLEAN    INDIC_HOSPI
         TIMESTAMP  LOAD_DTTM
         INTEGER    EXEC_ID
     }
@@ -148,7 +148,7 @@ erDiagram
         INTEGER    ID_HOSPI      PK "PK source"
         DATE       BATCH_DT      PK "Date du batch"
         INTEGER    ID_CONSULT
-        SMALLINT   NO_CHAMBRE
+        INTEGER    NO_CHAMBRE
         TIMESTAMP  TS_DEBUT_HOSPI
         TIMESTAMP  TS_FIN_HOSPI
         DECIMAL    COUT_HOSPI
