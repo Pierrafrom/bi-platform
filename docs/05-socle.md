@@ -303,9 +303,9 @@ erDiagram
 | `UNIT_TEMP`        | `TEMP_UNIT`      | Alimentation directe                                     |
 | `TENSION_PATIENT`  | `BLD_PRSS`       | Alimentation directe                                     |
 | `DSC_PATHO`        | `PATH_DSC`       | Alimentation directe                                     |
-| `INDIC_DIABETE`    | `DIBT_IND`       | `'True'` → 1, sinon 0                                    |
+| `INDIC_DIABETE`    | `DIBT_IND`       | `True` → 1, `False` → 0                                  |
 | `ID_TRAITEMENT`    | `TRET_ID`        | Alimentation directe                                     |
-| `INDIC_HOSPI`      | `HOSP_IND`       | `'True'` → 1, sinon 0                                    |
+| `INDIC_HOSPI`      | `HOSP_IND`       | `True` → 1, `False` → 0                                  |
 | *(pipeline)*       | `EXEC_ID`        | ID exécution en cours                                    |
 
 ### O_TRET — depuis STG_TRAITEMENT

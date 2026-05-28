@@ -49,7 +49,7 @@ La PK OBS = **PK source + `BATCH_DT`** (une ligne par batch, pas de déduplicati
 ```mermaid
 erDiagram
     OBS_CHAMBRE {
-        INTEGER  NO_CHAMBRE   PK "PK source"
+        SMALLINT  NO_CHAMBRE   PK "PK source"
         DATE     BATCH_DT     PK "Date du batch"
         VARCHAR  NOM_CHAMBRE
         BYTEINT  NO_ETAGE
@@ -123,9 +123,9 @@ erDiagram
         VARCHAR    UNIT_TEMP
         INTEGER    TENSION_PATIENT
         VARCHAR    DSC_PATHO
-        VARCHAR    INDIC_DIABETE
+        BOOLEAN    INDIC_DIABETE
         INTEGER    ID_TRAITEMENT
-        VARCHAR    INDIC_HOSPI
+        BOOLEAN    INDIC_HOSPI
         TIMESTAMP  LOAD_DTTM
         INTEGER    EXEC_ID
     }

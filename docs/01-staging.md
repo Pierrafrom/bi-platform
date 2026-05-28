@@ -1,6 +1,6 @@
 # Étape 1 — Staging (STG)
 
-Chargement des fichiers plats source dans le schéma **STG** de Snowflake.
+Chargement des fichiers plats source dans le schéma **STG** de Snowflake
 Référence : `inputs/Hopital Mapping VF.xlsx` (onglet *Staging*) et `inputs/Hopital CI VF.xlsx`.
 
 ---
@@ -91,9 +91,9 @@ erDiagram
         VARCHAR    UNIT_TEMP           "Unite C ou F"
         INTEGER    TENSION_PATIENT     "Tension arterielle"
         VARCHAR    DSC_PATHO           "Description pathologie"
-        VARCHAR    INDIC_DIABETE       "Diabete True ou False"
+        BOOLEAN    INDIC_DIABETE       "Diabete true ou false"
         INTEGER    ID_TRAITEMENT    FK "FK vers TRAITEMENT"
-        VARCHAR    INDIC_HOSPI         "Hospitalise True ou False"
+        BOOLEAN    INDIC_HOSPI         "Hospitalise true ou false"
     }
 
     STG_TRAITEMENT {
@@ -205,9 +205,9 @@ erDiagram
 | `CONSULTATION_YYYYMMDD.txt` | `UNIT_TEMP`        | STRING(15)  | `UNIT_TEMP`        | VARCHAR(15)  | —           |
 | `CONSULTATION_YYYYMMDD.txt` | `TENSION_PATIENT`  | NUMBER      | `TENSION_PATIENT`  | INTEGER      | —           |
 | `CONSULTATION_YYYYMMDD.txt` | `DSC_PATHO`        | STRING(250) | `DSC_PATHO`        | VARCHAR(250) | —           |
-| `CONSULTATION_YYYYMMDD.txt` | `INDIC_DIABETE`    | BOOLEAN     | `INDIC_DIABETE`    | VARCHAR(10)  | —           |
+| `CONSULTATION_YYYYMMDD.txt` | `INDIC_DIABETE`    | BOOLEAN     | `INDIC_DIABETE`    | BOOLEAN      | —           |
 | `CONSULTATION_YYYYMMDD.txt` | `ID_TRAITEMENT`    | NUMBER      | `ID_TRAITEMENT`    | INTEGER      | —           |
-| `CONSULTATION_YYYYMMDD.txt` | `INDIC_HOSPI`      | BOOLEAN     | `INDIC_HOSPI`      | VARCHAR(10)  | —           |
+| `CONSULTATION_YYYYMMDD.txt` | `INDIC_HOSPI`      | BOOLEAN     | `INDIC_HOSPI`      | BOOLEAN      | —           |
 
 ### TRAITEMENT — delta
 
@@ -228,7 +228,7 @@ erDiagram
 | ------------------------------ | ------------------- | ----------- | ------------------- | ------------- | ----------- |
 | `HOSPITALISATION_YYYYMMDD.txt` | `ID_HOSPI`          | NUMBER      | `ID_HOSPI`          | INTEGER       | Oui (PK)    |
 | `HOSPITALISATION_YYYYMMDD.txt` | `ID_CONSULT`        | NUMBER      | `ID_CONSULT`        | INTEGER       | Oui         |
-| `HOSPITALISATION_YYYYMMDD.txt` | `NO_CHAMBRE`        | NUMBER      | `NO_CHAMBRE`        | SMALLINT      | Oui         |
+| `HOSPITALISATION_YYYYMMDD.txt` | `NO_CHAMBRE`        | NUMBER      | `NO_CHAMBRE`        | SMALLINT     | Oui         |
 | `HOSPITALISATION_YYYYMMDD.txt` | `TS_DEBUT_HOSPI`    | DATETIME    | `TS_DEBUT_HOSPI`    | TIMESTAMP(0)  | Oui         |
 | `HOSPITALISATION_YYYYMMDD.txt` | `TS_FIN_HOSPI`      | DATETIME    | `TS_FIN_HOSPI`      | TIMESTAMP(0)  | —           |
 | `HOSPITALISATION_YYYYMMDD.txt` | `COUT_HOSPI`        | NUMBER      | `COUT_HOSPI`        | DECIMAL(10,2) | —           |

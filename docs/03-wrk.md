@@ -114,8 +114,8 @@ Chaque table WRK contient les colonnes source STG **+ les colonnes de contrôle*
 | `TS_DEBUT_CONSULT` | Oui         | Timestamp valide                         |
 | `TS_FIN_CONSULT`   | Oui         | Timestamp valide, > `TS_DEBUT_CONSULT`   |
 | `POIDS_PATIENT`    | Oui         | Non nul, > 0                             |
-| `INDIC_DIABETE`    | —           | Si renseigné : `True` ou `False`         |
-| `INDIC_HOSPI`      | —           | Si renseigné : `True` ou `False`         |
+| `INDIC_DIABETE`    | —           | Si renseigné : booléen (`True` ou `False`) |
+| `INDIC_HOSPI`      | —           | Si renseigné : booléen (`True` ou `False`) |
 
 ### TRAITEMENT — chargement delta
 
@@ -146,8 +146,8 @@ Chaque table WRK contient les colonnes source STG **+ les colonnes de contrôle*
 | Table        | Colonne STG                  | Transformation                             | Colonne WRK   |
 | ------------ | ---------------------------- | ------------------------------------------ | ------------- |
 | CONSULTATION | `TEMP_PATIENT` + `UNIT_TEMP` | Si `UNIT_TEMP = 'F'` : `(TEMP - 32) * 5/9` | `PATN_TEMP_C` |
-| CONSULTATION | `INDIC_DIABETE`              | `'True'` → 1, sinon 0                      | `DIBT_IND`    |
-| CONSULTATION | `INDIC_HOSPI`                | `'True'` → 1, sinon 0                      | `HOSP_IND`    |
+| CONSULTATION | `INDIC_DIABETE`              | `True` → 1, `False` → 0                    | `DIBT_IND`    |
+| CONSULTATION | `INDIC_HOSPI`                | `True` → 1, `False` → 0                    | `HOSP_IND`    |
 
 ---
 
