@@ -1,6 +1,6 @@
 # Étape 1 — Staging (STG)
 
-Chargement des fichiers plats source dans le schéma **STG** de Snowflake.
+Chargement des fichiers plats source dans le schéma **STG** de Snowflake
 Référence : `inputs/Hopital Mapping VF.xlsx` (onglet *Staging*) et `inputs/Hopital CI VF.xlsx`.
 
 ---
