@@ -7,7 +7,7 @@ USE SCHEMA STG;
 -- ─────────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS STG.CHAMBRE (
-    NO_CHAMBRE              SMALLINT          NOT NULL,
+    NO_CHAMBRE              INTEGER          NOT NULL,
     NOM_CHAMBRE             VARCHAR(100)      NOT NULL,
     NO_ETAGE                BYTEINT,
     NOM_BATIMENT            VARCHAR(100),
