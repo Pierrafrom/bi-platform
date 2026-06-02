@@ -31,7 +31,7 @@ git diff --name-only --diff-filter=U
 gh run list --branch $(git rev-parse --abbrev-ref HEAD) --limit 5 2>/dev/null || echo "CI check unavailable"
 
 # 6. PR template
-ls .github/PULL_REQUEST_TEMPLATE* 2>/dev/null || ls .github/pull_request_template* 2>/dev/null || echo "no template"
+find .github -name "PULL_REQUEST_TEMPLATE*" -o -name "pull_request_template*" 2>/dev/null | head -1 | xargs cat 2>/dev/null || echo "no template"
 ```
 
 ## Step 2 — Evaluate blockers
@@ -49,7 +49,7 @@ If no hard blockers: proceed to Step 3.
 
 ## Step 3 — Write PR description
 
-If a template was found → fill every section, leave no placeholder unfilled.
+If a template was found (Step 1 output shows template content) → extract it from Step 1's output and fill every section, leave no placeholder unfilled.
 If no template → use this structure:
 
 ```markdown
@@ -76,11 +76,13 @@ Closes #N
 
 ## Step 4 — Create the PR
 
+Extract the **default branch** from Step 1's output (the line `git log HEAD..origin/<branch> --oneline` shows which branch). Use this literal branch name in the command:
+
 ```bash
 gh pr create \
   --title "<type>(<scope>): <title>" \
   --body "<filled description>" \
-  --base ${default_branch}
+  --base <default-branch-from-step-1>
   # add --draft if CI is not green
 ```
 
@@ -91,7 +93,7 @@ git remote -v | grep origin | head -1
 # e.g. origin  git@github.com:owner/repo.git (fetch)
 ```
 Then output this link (URL-encode title and body — replace spaces with `%20`, newlines with `%0A`, `#` with `%23`):
-`https://github.com/<owner>/<repo>/compare/<default_branch>...<branch>?quick_pull=1&title=<encoded-title>&body=<encoded-body>`
+`https://github.com/<owner>/<repo>/compare/<default-branch-from-step-1>...<branch>?quick_pull=1&title=<encoded-title>&body=<encoded-body>`
 
 ## Post-creation checklist (show to user)
 - [ ] Reviewers assigned

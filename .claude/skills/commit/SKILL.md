@@ -8,19 +8,30 @@ allowed-tools: Bash
 
 Analyze staged/unstaged changes and produce well-formatted, atomic commits.
 
+**Pre-flight:** Check for merge conflicts — if any exist, stop and instruct the user to resolve them before committing.
+
 ## Steps
 
-### 1. Analyze
+### 1. Pre-flight checks
 ```bash
 git status
+```
+
+**If merge conflicts detected** (files with `both modified` or `both added` markers): Stop immediately and instruct the user to resolve conflicts before continuing. Do not proceed.
+
+### 2. Analyze changes
+```bash
 git diff --staged --stat
 git diff --staged
 git diff --stat
 git diff
 ```
-Nothing to commit → inform the user and stop.
 
-### 2. Respect pre-staged files
+If nothing is staged and nothing is unstaged: check for **untracked files** (from `git status` output).
+- If untracked files exist: ask the user if they should be included (`git add -N` to track them without staging).
+- If user declines or no untracked files exist: inform and stop.
+
+### 3. Respect pre-staged files
 If `git diff --staged` shows changes, the user has explicitly staged specific files.
 **Do not modify the staging area** — commit only what is already staged, unless the user asks to stage more.
 
@@ -28,7 +39,7 @@ If nothing is staged yet: cluster unstaged diffs by functional theme (auth, UI, 
 
 **One theme → one commit. Multiple distinct themes → propose a split plan and wait for confirmation before staging or committing.**
 
-### 3. Message format — Conventional Commits
+### 4. Message format — Conventional Commits
 ```
 <type>(<scope>): <imperative title, 50 chars max>
 
@@ -43,7 +54,7 @@ If nothing is staged yet: cluster unstaged diffs by functional theme (auth, UI, 
 
 **Body rules:** explain *why* and *what*, not how (the diff shows how). Mention impacts and side effects.
 
-### 4. Stage and commit
+### 5. Stage and commit
 Stage specific files only — never blind `git add .`.
 
 **Show the full commit message to the user and wait for their approval before executing the commit command.**
@@ -52,7 +63,7 @@ After approval: run `git commit`. If the commit fails (e.g. pre-commit hook bloc
 
 Confirm success with `git log --oneline -1`.
 
-### 5. Summary
+### 6. Summary
 ```
 N commit(s) created
 ────────────────────────

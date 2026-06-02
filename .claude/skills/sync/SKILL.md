@@ -8,6 +8,10 @@ allowed-tools: Bash
 
 Pull all remote changes and produce a structured recap of what changed and who did it.
 
+## State management
+
+**Execute this process one step at a time.** If any step requires user input or encounters a stop condition, **halt all tool execution and respond to the user immediately.** Do not proceed to the next step until the user replies.
+
 ## Steps
 
 ### 1. Check local state
