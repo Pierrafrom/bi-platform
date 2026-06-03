@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: wrk_patient
+    description: "Quality-checked and deduplicated patient records."
+    columns:
+      - name: patient_id
+        description: "Patient source identifier."
+        tests: [not_null]
+      - name: wrk_stts_cd
+        description: "Working status after quality checks."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["OK", "REJ"]
+      - name: rej_cod
+        description: "Reject reason code for rejected rows."
+      - name: batch_dt
+        description: "Processed batch date."
+        tests: [not_null]
+      - name: exec_id
+        description: "Pipeline execution identifier."
+        tests: [not_null]
+
+  - name: wrk_personnel
+    description: "Quality-checked and deduplicated personnel records."
+    columns:
+      - name: staff_id
+        description: "Staff source identifier."
+        tests: [not_null]
+      - name: wrk_stts_cd
+        description: "Working status after quality checks."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["OK", "REJ"]
+      - name: rej_cod
+        description: "Reject reason code for rejected rows."
+      - name: batch_dt
+        description: "Processed batch date."
+        tests: [not_null]
+      - name: exec_id
+        description: "Pipeline execution identifier."
+        tests: [not_null]

@@ -45,3 +45,37 @@ models:
       - name: updated_at
         description: "Last update timestamp in the source system."
         tests: [not_null]
+
+  - name: stg_personnel
+    description: >
+      Cleaned and renamed personnel records from the Staging layer.
+      Type casting only, no business logic.
+    columns:
+      - name: staff_id
+        description: "Unique staff identifier (source: ID_PERSONNEL)."
+        tests: [not_null, unique]
+      - name: last_name
+        description: "Staff last name."
+        tests: [not_null]
+      - name: first_name
+        description: "Staff first name."
+        tests: [not_null]
+      - name: job_title
+        description: "Personnel function in the hospital."
+        tests: [not_null]
+      - name: work_start_at
+        description: "Activity start timestamp."
+        tests: [not_null]
+      - name: work_end_at
+        description: "Activity end timestamp, nullable for active staff."
+      - name: work_end_reason
+        description: "Reason for activity end."
+      - name: created_at
+        description: "Row creation timestamp in the source system."
+        tests: [not_null]
+      - name: updated_at
+        description: "Last update timestamp in the source system."
+        tests: [not_null]
+      - name: status_code
+        description: "Personnel status code."
+        tests: [not_null]

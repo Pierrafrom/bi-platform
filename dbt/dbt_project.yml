@@ -17,7 +17,7 @@ models:
   bi_platform:
     # Staging — raw ingestion, views, no business logic
     staging:
-      +schema: staging
+      +schema: stg
       +materialized: view
       +tags: ["staging"]
 
@@ -41,6 +41,10 @@ models:
 
     # Marts — fact + dimension tables for Power BI (Socle layer)
     marts:
-      +schema: socle
+      +schema: soc
       +materialized: table
       +tags: ["socle"]
+
+vars:
+  batch_date: "2026-04-29"
+  exec_id: 0
