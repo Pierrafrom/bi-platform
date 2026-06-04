@@ -24,9 +24,17 @@ personnel AS (
 
 all_parties AS (
 
-    SELECT * FROM patients
+    SELECT
+        src_id,
+        src_typ,
+        exec_id
+    FROM patients
     UNION ALL
-    SELECT * FROM personnel
+    SELECT
+        src_id,
+        src_typ,
+        exec_id
+    FROM personnel
 
 )
 

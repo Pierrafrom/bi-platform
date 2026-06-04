@@ -2,14 +2,48 @@
 
 WITH source AS (
 
-    SELECT * FROM {{ ref("stg_patient") }}
+    SELECT
+        patient_id,
+        last_name,
+        first_name,
+        social_security_number,
+        birth_date,
+        birth_city,
+        birth_country,
+        phone_number,
+        phone_country_code,
+        street_number,
+        street_name,
+        address_complement,
+        postal_code,
+        city,
+        country,
+        created_at,
+        updated_at
+    FROM {{ ref("stg_patient") }}
 
 ),
 
 quality_check AS (
 
     SELECT
-        *,
+        patient_id,
+        last_name,
+        first_name,
+        social_security_number,
+        birth_date,
+        birth_city,
+        birth_country,
+        phone_number,
+        phone_country_code,
+        street_number,
+        street_name,
+        address_complement,
+        postal_code,
+        city,
+        country,
+        created_at,
+        updated_at,
         CASE
             WHEN patient_id IS NULL THEN 'REJ'
             WHEN patient_id <= 0 THEN 'REJ'
@@ -38,7 +72,28 @@ quality_check AS (
 ok_deduped AS (
 
     SELECT
-        *,
+        patient_id,
+        last_name,
+        first_name,
+        social_security_number,
+        birth_date,
+        birth_city,
+        birth_country,
+        phone_number,
+        phone_country_code,
+        street_number,
+        street_name,
+        address_complement,
+        postal_code,
+        city,
+        country,
+        created_at,
+        updated_at,
+        wrk_stts_cd,
+        rej_cod,
+        rej_dsc,
+        batch_dt,
+        exec_id,
         ROW_NUMBER() OVER (
             PARTITION BY patient_id
             ORDER BY updated_at DESC, created_at DESC
@@ -48,12 +103,56 @@ ok_deduped AS (
 
 )
 
-SELECT * EXCLUDE (rn)
+SELECT
+    patient_id,
+    last_name,
+    first_name,
+    social_security_number,
+    birth_date,
+    birth_city,
+    birth_country,
+    phone_number,
+    phone_country_code,
+    street_number,
+    street_name,
+    address_complement,
+    postal_code,
+    city,
+    country,
+    created_at,
+    updated_at,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
 FROM ok_deduped
 WHERE rn = 1
 
 UNION ALL
 
-SELECT *
+SELECT
+    patient_id,
+    last_name,
+    first_name,
+    social_security_number,
+    birth_date,
+    birth_city,
+    birth_country,
+    phone_number,
+    phone_country_code,
+    street_number,
+    street_name,
+    address_complement,
+    postal_code,
+    city,
+    country,
+    created_at,
+    updated_at,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
 FROM quality_check
 WHERE wrk_stts_cd = 'REJ'

@@ -2,14 +2,34 @@
 
 WITH source AS (
 
-    SELECT * FROM {{ ref("stg_personnel") }}
+    SELECT
+        staff_id,
+        last_name,
+        first_name,
+        job_title,
+        work_start_at,
+        work_end_at,
+        work_end_reason,
+        created_at,
+        updated_at,
+        status_code
+    FROM {{ ref("stg_personnel") }}
 
 ),
 
 quality_check AS (
 
     SELECT
-        *,
+        staff_id,
+        last_name,
+        first_name,
+        job_title,
+        work_start_at,
+        work_end_at,
+        work_end_reason,
+        created_at,
+        updated_at,
+        status_code,
         CASE
             WHEN staff_id IS NULL THEN 'REJ'
             WHEN staff_id <= 0 THEN 'REJ'
@@ -44,7 +64,21 @@ quality_check AS (
 ok_deduped AS (
 
     SELECT
-        *,
+        staff_id,
+        last_name,
+        first_name,
+        job_title,
+        work_start_at,
+        work_end_at,
+        work_end_reason,
+        created_at,
+        updated_at,
+        status_code,
+        wrk_stts_cd,
+        rej_cod,
+        rej_dsc,
+        batch_dt,
+        exec_id,
         ROW_NUMBER() OVER (
             PARTITION BY staff_id
             ORDER BY updated_at DESC, created_at DESC
@@ -54,12 +88,42 @@ ok_deduped AS (
 
 )
 
-SELECT * EXCLUDE (rn)
+SELECT
+    staff_id,
+    last_name,
+    first_name,
+    job_title,
+    work_start_at,
+    work_end_at,
+    work_end_reason,
+    created_at,
+    updated_at,
+    status_code,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
 FROM ok_deduped
 WHERE rn = 1
 
 UNION ALL
 
-SELECT *
+SELECT
+    staff_id,
+    last_name,
+    first_name,
+    job_title,
+    work_start_at,
+    work_end_at,
+    work_end_reason,
+    created_at,
+    updated_at,
+    status_code,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
 FROM quality_check
 WHERE wrk_stts_cd = 'REJ'

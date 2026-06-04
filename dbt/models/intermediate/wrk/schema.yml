@@ -16,6 +16,12 @@ models:
                 values: ["OK", "REJ"]
       - name: rej_cod
         description: "Reject reason code for rejected rows."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              config:
+                where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
         description: "Processed batch date."
         tests: [not_null]
@@ -38,6 +44,12 @@ models:
                 values: ["OK", "REJ"]
       - name: rej_cod
         description: "Reject reason code for rejected rows."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              config:
+                where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
         description: "Processed batch date."
         tests: [not_null]
