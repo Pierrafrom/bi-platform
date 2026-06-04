@@ -22,7 +22,7 @@ renamed AS (
         num_secu                                            AS social_security_number,
 
         -- Birth
-        CAST(dt_naiss AS DATE)                             AS birth_date,
+        TRY_TO_DATE(dt_naiss)                               AS birth_date,
         ville_naiss                                         AS birth_city,
         pays_naiss                                          AS birth_country,
 
@@ -39,8 +39,8 @@ renamed AS (
         pays                                                AS country,
 
         -- Audit
-        CAST(ts_creation_patient AS TIMESTAMP_NTZ)          AS created_at,
-        CAST(ts_maj_patient AS TIMESTAMP_NTZ)               AS updated_at
+        TRY_TO_TIMESTAMP_NTZ(ts_creation_patient)           AS created_at,
+        TRY_TO_TIMESTAMP_NTZ(ts_maj_patient)                AS updated_at
 
     FROM source
 
