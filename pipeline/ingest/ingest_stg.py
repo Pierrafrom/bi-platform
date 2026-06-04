@@ -222,10 +222,14 @@ def ingest_table(connection: SnowflakeConnection, batch_date: date, table: str) 
     with connection.cursor() as cursor:
         _create_temp_table(cursor, temp_table, EXPECTED_COLUMNS[table])
         _insert_temp_rows(cursor, temp_table, EXPECTED_COLUMNS[table], rows)
-        affected_rows = _load_full(cursor, temp_table, table) if _is_full(table) else _load_delta(
-            cursor,
-            temp_table,
-            table,
+        affected_rows = (
+            _load_full(cursor, temp_table, table)
+            if _is_full(table)
+            else _load_delta(
+                cursor,
+                temp_table,
+                table,
+            )
         )
 
     result = LoadResult(
