@@ -1,4 +1,9 @@
-{{ config(materialized="table", schema="wrk") }}
+{{ config(
+    materialized="table",
+    schema="wrk",
+    pre_hook="{{ start_exec(this.name) }}",
+    post_hook="{{ end_exec(var('exec_id', -1), 'OK') }}"
+) }}
 
 WITH source AS (
 
