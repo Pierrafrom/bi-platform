@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: wrk_chambre
+    description: >
+      Quality-controlled and deduplicated room records.
+      Adds WRK_STTS_CD (OK/REJ), REJ_COD, BATCH_DT, EXEC_ID.
+      Dedup on room_number — most recent created_date wins.
+    columns:
+      - name: room_number
+        description: "Room number — natural PK from source."
+        tests: [not_null]
+      - name: WRK_STTS_CD
+        description: "Row status after quality control: OK or REJ."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['OK', 'REJ']
+      - name: REJ_COD
+        description: "Rejection code. Null if OK."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['NULL_MANDATORY', 'WRONG_FORMAT']
+              config:
+                where: "WRK_STTS_CD = 'REJ'"
+      - name: REJ_DSC
+        description: "Rejection description. Null if OK."
+      - name: BATCH_DT
+        description: "Batch date (from dbt var batch_date)."
+        tests: [not_null]
+      - name: EXEC_ID
+        description: "Execution ID — FK to TCH.T_SUIV_TRMT."
+        tests: [not_null]
+
+  - name: wrk_medicament
+    description: >
+      Quality-controlled and deduplicated medication records.
+      Adds WRK_STTS_CD (OK/REJ), REJ_COD, BATCH_DT, EXEC_ID.
+      Dedup on composite PK (medicine_code, medicine_category, manufacturer_brand).
+    columns:
+      - name: medicine_code
+        description: "Medication code — part of composite PK."
+        tests: [not_null]
+      - name: medicine_category
+        description: "Medication category — part of composite PK."
+        tests: [not_null]
+      - name: manufacturer_brand
+        description: "Manufacturer brand — part of composite PK."
+        tests: [not_null]
+      - name: WRK_STTS_CD
+        description: "Row status after quality control: OK or REJ."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['OK', 'REJ']
+      - name: REJ_COD
+        description: "Rejection code. Null if OK."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['NULL_MANDATORY']
+              config:
+                where: "WRK_STTS_CD = 'REJ'"
+      - name: BATCH_DT
+        description: "Batch date (from dbt var batch_date)."
+        tests: [not_null]
+      - name: EXEC_ID
+        description: "Execution ID — FK to TCH.T_SUIV_TRMT."
+        tests: [not_null]
