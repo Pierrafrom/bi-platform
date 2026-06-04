@@ -113,8 +113,10 @@ jobs:
         run: uv run sqlfluff lint models/ --dialect=snowflake --templater=jinja
 
   # ---------------------------------------------------------------------------
-  # dbt: compile check (no Snowflake connection needed)
-  # Runs on push to any branch and on PRs when dbt/ files change
+  # dbt: parse check (no Snowflake connection needed)
+  # dbt parse validates models, sources, macros and generates manifest.json
+  # without attempting a database connection — unlike dbt compile.
+  # Runs on push to any branch and on PRs when dbt/ files change.
   # ---------------------------------------------------------------------------
   dbt-compile:
     name: dbt compile
@@ -181,7 +183,7 @@ jobs:
         working-directory: dbt/
         run: uv run dbt deps
 
-      - name: dbt compile
+      - name: dbt parse
         if: steps.dbt_changed.outputs.changed == 'true'
         working-directory: dbt/
-        run: uv run dbt compile --profiles-dir ~/.dbt
+        run: uv run dbt parse --profiles-dir ~/.dbt
