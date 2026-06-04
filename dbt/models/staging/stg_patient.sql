@@ -1,3 +1,5 @@
+{{ config(materialized="view", schema="stg") }}
+
 -- Staging model for the PATIENT source table.
 -- Contract: 1:1 with the source file — type casting and renaming only.
 -- No business logic, no joins, no filtering.
@@ -34,11 +36,11 @@ renamed AS (
         cd_postal AS postal_code,
         ville AS city,
         pays AS country,
-        TRY_TO_DATE(dt_naiss, 'YYYY-MM-DD') AS birth_date,
+        TRY_TO_DATE(dt_naiss) AS birth_date,
 
         -- Audit
-        TRY_TO_TIMESTAMP(ts_creation_patient) AS created_at,
-        TRY_TO_TIMESTAMP(ts_maj_patient) AS updated_at
+        TRY_TO_TIMESTAMP_NTZ(ts_creation_patient) AS created_at,
+        TRY_TO_TIMESTAMP_NTZ(ts_maj_patient) AS updated_at
 
     FROM source
 

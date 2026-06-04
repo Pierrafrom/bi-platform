@@ -60,3 +60,21 @@ models:
       - name: EXEC_ID
         description: "Execution ID — FK to TCH.T_SUIV_TRMT."
         tests: [not_null]
+
+  - name: r_part
+    description: >
+      Unified party reference table for patients and personnel.
+      The surrogate key is generated deterministically from SRC_TYP and SRC_ID.
+    columns:
+      - name: part_id
+        description: "Deterministic surrogate key for a party."
+        tests: [not_null, unique]
+      - name: src_id
+        description: "Source identifier from PATIENT or PERSONNEL."
+        tests: [not_null]
+      - name: src_typ
+        description: "Party type: Patient or personnel job title."
+        tests: [not_null]
+      - name: exec_id
+        description: "Pipeline execution identifier."
+        tests: [not_null]
