@@ -46,6 +46,57 @@ models:
         description: "Last update timestamp in the source system."
         tests: [not_null]
 
+  - name: stg_chambre
+    description: >
+      Cleaned and renamed hospital room records from the Staging layer.
+      Type casting only — no business logic.
+    columns:
+      - name: room_number
+        description: "Room number — natural PK (source: NO_CHAMBRE)."
+        tests: [not_null, unique]
+      - name: room_name
+        description: "Room name."
+        tests: [not_null]
+      - name: floor_number
+        description: "Floor number."
+      - name: building_name
+        description: "Building name."
+      - name: room_type
+        description: "Room type (single, double, etc.)."
+      - name: day_rate
+        description: "Daily rate in euros."
+        tests: [not_null]
+      - name: created_date
+        description: "Room creation date, cast to DATE."
+        tests: [not_null]
+
+  - name: stg_medicament
+    description: >
+      Cleaned and renamed medication records from the Staging layer.
+      Type casting only — no business logic.
+      PK is composite: (medicine_code, medicine_category, manufacturer_brand).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - medicine_code
+              - medicine_category
+              - manufacturer_brand
+    columns:
+      - name: medicine_code
+        description: "Medication code — part of composite PK (source: CD_MEDICAMENT)."
+        tests: [not_null]
+      - name: medicine_category
+        description: "Medication category — part of composite PK (source: CATG_MEDICAMENT)."
+        tests: [not_null]
+      - name: manufacturer_brand
+        description: "Manufacturer brand — part of composite PK (source: MARQUE_FABRI)."
+        tests: [not_null]
+      - name: medicine_name
+        description: "Medication name."
+      - name: medicine_packaging
+        description: "Packaging / conditioning description."
+
   - name: stg_personnel
     description: >
       Cleaned and renamed personnel records from the Staging layer.
