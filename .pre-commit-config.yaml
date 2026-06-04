@@ -17,9 +17,8 @@ repos:
       - id: mixed-line-ending          # Enforce LF
         args: ["--fix=lf"]
       - id: detect-private-key         # Block accidentally committed private keys
-      # Uncomment when the team starts working together on feature branches:
-      # - id: no-commit-to-branch
-      #   args: ["--branch=main"]
+      - id: no-commit-to-branch
+        args: ["--branch=main"]
 
   # ---------------------------------------------------------------------------
   # Python: ruff (lint + format — replaces flake8, isort, black)
@@ -38,7 +37,7 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        files: ^pipeline/utils/      # dags/ excluded — imports airflow at runtime
+        files: ^pipeline/      # dags/ excluded via pyproject.toml [tool.mypy] exclude
         additional_dependencies:
           - "types-python-dateutil"
 
