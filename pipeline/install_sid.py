@@ -1,135 +1,126 @@
+"""Install the hospital SID (Snowflake Information System) schema.
+
+Runs the three idempotent DDL scripts in order against the Snowflake account
+configured via environment variables:
+
+    1. 00_create_databases.sql — databases and warehouses (idempotent)
+    2. 01_create_stg_tables.sql — STG tables (always recreated)
+    3. 06_create_tch_tables.sql — TCH tracking tables (never recreated)
+
+Usage:
+    python pipeline/install_sid.py
+
+Snowflake credentials are read from environment variables (or a .env file):
+    SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT,
+    SNOWFLAKE_WAREHOUSE, SNOWFLAKE_ROLE
+"""
+
+from __future__ import annotations
+
+import logging
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
 import snowflake.connector
-import argparse
+from dotenv import load_dotenv
 
-from log_config import get_logger
+from pipeline.utils.logging_config import configure_logging
 
-# Répertoire contenant les scripts SQL
-SQL_DIR = Path(__file__).resolve().parent.parent / "snowflake"
+_SQL_DIR = Path(__file__).resolve().parent.parent / "snowflake"
 
-# Chargement des variables d'environnement
-load_dotenv()
-
-# Configuration du logger
-logger = get_logger("install_sid.log", console=True)
-
-# Ordre des scripts à exécuter
-SCRIPT_ORDER = [
+_SCRIPT_ORDER: tuple[str, ...] = (
     "00_create_databases.sql",
     "01_create_stg_tables.sql",
-    "03_create_wrk_tables.sql",
     "06_create_tch_tables.sql",
-    "05_create_soc_tables.sql"
-]
+)
+
+load_dotenv()
+configure_logging()
+logger = logging.getLogger(__name__)
 
 
 def connect_to_snowflake() -> snowflake.connector.SnowflakeConnection:
-    """
-    Établit une connexion à Snowflake.
-    """
-    try:
-        conn = snowflake.connector.connect(
-            user=os.getenv("SNOWFLAKE_USER"),
-            password=os.getenv("SNOWFLAKE_PASSWORD"),
-            account=os.getenv("SNOWFLAKE_ACCOUNT"),
-            warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
-            role=os.getenv("SNOWFLAKE_ROLE")
-        )
+    """Establish a Snowflake connection from environment variables.
 
-        logger.info("Connexion à Snowflake réussie.")
-        return conn
+    Returns:
+        An open Snowflake connection.
 
-    except Exception as e:
-        logger.error(f"Erreur de connexion à Snowflake : {e}")
-        raise
+    Raises:
+        snowflake.connector.errors.DatabaseError: If the connection cannot be
+            established (bad credentials, unreachable account, etc.).
+    """
+    conn = snowflake.connector.connect(
+        user=os.getenv("SNOWFLAKE_USER"),
+        password=os.getenv("SNOWFLAKE_PASSWORD"),
+        account=os.getenv("SNOWFLAKE_ACCOUNT"),
+        warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
+        role=os.getenv("SNOWFLAKE_ROLE"),
+    )
+    logger.info("Connected to Snowflake.")
+    return conn
 
 
 def execute_sql_file(
     conn: snowflake.connector.SnowflakeConnection,
-    file_path: Path
+    file_path: Path,
 ) -> None:
-    """
-    Exécute un fichier SQL dans Snowflake.
+    """Execute every statement in a SQL file against an open connection.
+
+    Statements are split on semicolons; blank segments are skipped.
 
     Args:
-        conn: Connexion Snowflake.
-        file_path: Chemin du fichier SQL.
+        conn: Open Snowflake connection.
+        file_path: Path to the .sql file to execute.
+
+    Raises:
+        snowflake.connector.errors.ProgrammingError: If any statement fails.
     """
+    logger.info("Executing script: %s", file_path.name)
+    sql_content = file_path.read_text(encoding="utf-8")
 
-    logger.info(f"Début d'exécution du script : {file_path.name}")
+    statements = [stmt.strip() for stmt in sql_content.split(";") if stmt.strip()]
 
-    try:
-        sql_content = file_path.read_text(encoding="utf-8")
+    with conn.cursor() as cursor:
+        for i, stmt in enumerate(statements, start=1):
+            cursor.execute(stmt)
+            logger.info(
+                "Statement %d/%d executed successfully in %s.",
+                i,
+                len(statements),
+                file_path.name,
+            )
 
-        statements = [
-            stmt.strip()
-            for stmt in sql_content.split(";")
-            if stmt.strip()
-        ]
-
-        with conn.cursor() as cursor:
-            for i, stmt in enumerate(statements, start=1):
-                try:
-                    cursor.execute(stmt)
-
-                    logger.info(
-                        f"Statement {i}/{len(statements)} exécuté avec succès."
-                    )
-
-                except Exception as stmt_error:
-                    logger.error(
-                        f"Erreur dans le statement {i}/{len(statements)} "
-                        f"du fichier {file_path.name} : {stmt_error}"
-                    )
-                    raise
-
-        logger.info(f"Script terminé avec succès : {file_path.name}")
-
-    except Exception as e:
-        logger.error(
-            f"Échec de l'exécution du script {file_path.name} : {e}"
-        )
-        raise
+    logger.info("Script completed: %s", file_path.name)
 
 
 def run_installation() -> None:
-    """
-    Fonction principale pour exécuter l'installation du SID.
-    """
+    """Run all DDL scripts in order to install or refresh the SID schema.
 
-    logger.info("=== Début de l'installation du SID médical ===")
+    Iterates over ``_SCRIPT_ORDER`` and executes each SQL file. Raises
+    immediately if a script file is missing — no silent skips.
+
+    Raises:
+        FileNotFoundError: If any expected SQL script is absent from
+            ``_SQL_DIR``.
+        snowflake.connector.errors.DatabaseError: If a Snowflake error occurs
+            during execution.
+    """
+    logger.info("Starting SID installation.")
+
+    for script_name in _SCRIPT_ORDER:
+        script_path = _SQL_DIR / script_name
+        if not script_path.exists():
+            raise FileNotFoundError(f"Required SQL script not found: {script_path}")
 
     conn = connect_to_snowflake()
-
     try:
-        for script_name in SCRIPT_ORDER:
-
-            script_path = SQL_DIR / script_name
-
-            if not script_path.exists():
-                logger.warning(
-                    f"Le fichier {script_path} n'existe pas. Script ignoré."
-                )
-                continue
-
-            execute_sql_file(conn, script_path)
-
-        logger.info(" Tous les scripts ont été exécutés avec succès.")
-
+        for script_name in _SCRIPT_ORDER:
+            execute_sql_file(conn, _SQL_DIR / script_name)
+        logger.info("All scripts executed successfully.")
     finally:
         conn.close()
-        logger.info("Connexion à Snowflake fermée.")
-        logger.info("=== Fin de l'installation ===")
+        logger.info("Snowflake connection closed.")
 
 
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(
-        description="Installe le SID médical dans Snowflake."
-    )
-
-    parser.parse_args()
-
     run_installation()
