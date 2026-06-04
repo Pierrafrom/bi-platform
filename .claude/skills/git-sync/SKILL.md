@@ -1,5 +1,5 @@
 ---
-name: sync
+name: git-sync
 description: Use this skill when the user wants to pull remote changes, sync with the distant repo, update their local branch, or get a recap of what changed and who did what.
 allowed-tools: Bash
 ---
