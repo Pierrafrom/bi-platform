@@ -5,7 +5,7 @@ sources:
     description: >
       Raw hospital data loaded daily into the Snowflake Staging layer.
       One folder per day: BDD_HOSPITAL_YYYYMMDD. Delimiter: semicolon. Encoding: UTF-8.
-    database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'HOPITAL_DW') }}"
     schema: staging
 
     tables:
