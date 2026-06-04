@@ -14,33 +14,33 @@ renamed AS (
 
     SELECT
         -- Keys
-        id_patient                                          AS patient_id,
+        id_patient AS patient_id,
 
         -- Identity
-        nom_patient                                         AS last_name,
-        prenom_patient                                      AS first_name,
-        num_secu                                            AS social_security_number,
+        nom_patient AS last_name,
+        prenom_patient AS first_name,
+        num_secu AS social_security_number,
 
         -- Birth
-        TRY_TO_DATE(dt_naiss)                               AS birth_date,
-        ville_naiss                                         AS birth_city,
-        pays_naiss                                          AS birth_country,
+        ville_naiss AS birth_city,
+        pays_naiss AS birth_country,
+        num_telephone AS phone_number,
 
         -- Contact
-        num_telephone                                       AS phone_number,
-        ind_pays_num_telp                                   AS phone_country_code,
+        ind_pays_num_telp AS phone_country_code,
+        num_voie AS street_number,
 
         -- Address
-        num_voie                                            AS street_number,
-        dsc_voie                                            AS street_name,
-        cmpl_voie                                           AS address_complement,
-        cd_postal                                           AS postal_code,
-        ville                                               AS city,
-        pays                                                AS country,
+        dsc_voie AS street_name,
+        cmpl_voie AS address_complement,
+        cd_postal AS postal_code,
+        ville AS city,
+        pays AS country,
+        TRY_TO_DATE(dt_naiss) AS birth_date,
 
         -- Audit
-        TRY_TO_TIMESTAMP_NTZ(ts_creation_patient)           AS created_at,
-        TRY_TO_TIMESTAMP_NTZ(ts_maj_patient)                AS updated_at
+        TRY_TO_TIMESTAMP_NTZ(ts_creation_patient) AS created_at,
+        TRY_TO_TIMESTAMP_NTZ(ts_maj_patient) AS updated_at
 
     FROM source
 
