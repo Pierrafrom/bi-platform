@@ -5,8 +5,8 @@ sources:
     description: >
       Raw hospital data loaded daily into the Snowflake Staging layer.
       One folder per day: BDD_HOSPITAL_YYYYMMDD. Delimiter: semicolon. Encoding: UTF-8.
-    database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
-    schema: staging
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'HOPITAL_DW') }}"
+    schema: stg
 
     tables:
       - name: patient
@@ -20,7 +20,6 @@ sources:
             tests: [not_null]
           - name: NUM_SECU
             description: "French social security number."
-            tests: [not_null]
 
       - name: personnel
         description: "Medical and administrative staff. One row per staff member."

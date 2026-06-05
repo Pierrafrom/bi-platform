@@ -66,27 +66,85 @@ jobs:
         run: uv run pytest
 
   # ---------------------------------------------------------------------------
-  # dbt: compile check (no Snowflake connection needed)
-  # Runs only when dbt models change
+  # SQL quality: sqlfluff (Snowflake dialect)
+  # Runs whenever dbt/models/ files change — on push and on PRs
+  # ---------------------------------------------------------------------------
+  sqlfluff:
+    name: SQL lint (sqlfluff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check for dbt model changes
+        id: sql_changed
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+            git fetch origin "${{ github.base_ref }}" --depth=1
+          else
+            BASE="${{ github.event.before }}"
+            # On the very first push (no previous commit), lint everything
+            [ "$BASE" = "0000000000000000000000000000000000000000" ] && BASE=""
+          fi
+          if [ -z "$BASE" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only "$BASE"...HEAD | grep -q '^dbt/models/' \
+              && echo "changed=true" >> "$GITHUB_OUTPUT" \
+              || echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up uv
+        if: steps.sql_changed.outputs.changed == 'true'
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install dependencies
+        if: steps.sql_changed.outputs.changed == 'true'
+        run: uv sync
+
+      - name: sqlfluff lint
+        if: steps.sql_changed.outputs.changed == 'true'
+        working-directory: dbt/
+        run: uv run sqlfluff lint models/ --dialect=snowflake --templater=jinja
+
+  # ---------------------------------------------------------------------------
+  # dbt: parse check (no Snowflake connection needed)
+  # dbt parse validates models, sources, macros and generates manifest.json
+  # without attempting a database connection — unlike dbt compile.
+  # Runs on push to any branch and on PRs when dbt/ files change.
   # ---------------------------------------------------------------------------
   dbt-compile:
     name: dbt compile
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Run on PRs only; detect dbt/ changes via git diff against main
-    if: github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # needed for git diff against base branch
+          fetch-depth: 0
 
       - name: Check for dbt changes
         id: dbt_changed
         run: |
-          git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^dbt/' \
-            && echo "changed=true" >> "$GITHUB_OUTPUT" \
-            || echo "changed=false" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+            git fetch origin "${{ github.base_ref }}" --depth=1
+          else
+            BASE="${{ github.event.before }}"
+            [ "$BASE" = "0000000000000000000000000000000000000000" ] && BASE=""
+          fi
+          if [ -z "$BASE" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only "$BASE"...HEAD | grep -q '^dbt/' \
+              && echo "changed=true" >> "$GITHUB_OUTPUT" \
+              || echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up uv
         if: steps.dbt_changed.outputs.changed == 'true'
@@ -114,9 +172,9 @@ jobs:
                 user: dummy
                 password: dummy
                 role: dummy
-                database: BI_PLATFORM
+                database: HOPITAL_DW
                 warehouse: dummy
-                schema: STAGING
+                schema: STG
                 threads: 1
           EOF
 
@@ -125,7 +183,7 @@ jobs:
         working-directory: dbt/
         run: uv run dbt deps
 
-      - name: dbt compile
+      - name: dbt parse
         if: steps.dbt_changed.outputs.changed == 'true'
         working-directory: dbt/
-        run: uv run dbt compile --profiles-dir ~/.dbt
+        run: uv run dbt parse --profiles-dir ~/.dbt

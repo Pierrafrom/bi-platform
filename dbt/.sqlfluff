@@ -1,0 +1,8 @@
+[sqlfluff]
+dialect = snowflake
+templater = jinja
+
+# RF04 produces false positives on compound identifiers like first_name / last_name
+# because FIRST and LAST are keywords in Snowflake window functions.
+# These are valid column names — disabling the rule project-wide.
+exclude_rules = RF04
