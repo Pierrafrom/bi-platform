@@ -19,14 +19,18 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from pathlib import Path
 
 import snowflake.connector
 from dotenv import load_dotenv
 
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 from pipeline.utils.logging_config import configure_logging
 
 _SQL_DIR = Path(__file__).resolve().parent.parent / "snowflake"
+_LOG_DIR = Path(__file__).resolve().parent / "logs"
 
 _SCRIPT_ORDER: tuple[str, ...] = (
     "00_create_databases.sql",
@@ -35,7 +39,8 @@ _SCRIPT_ORDER: tuple[str, ...] = (
 )
 
 load_dotenv()
-configure_logging()
+_LOG_DIR.mkdir(exist_ok=True)
+configure_logging(include_file=str(_LOG_DIR / "install_sid.log"))
 logger = logging.getLogger(__name__)
 
 
