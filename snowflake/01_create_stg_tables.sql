@@ -6,8 +6,10 @@ USE SCHEMA STG;
 -- Chargement: FULL (remplacé chaque jour)
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.CHAMBRE (
-    NO_CHAMBRE              SMALLINT          NOT NULL,
+DROP TABLE IF EXISTS STG.CHAMBRE;
+
+CREATE TABLE STG.CHAMBRE (
+    NO_CHAMBRE              INTEGER          NOT NULL,
     NOM_CHAMBRE             VARCHAR(100)      NOT NULL,
     NO_ETAGE                BYTEINT,
     NOM_BATIMENT            VARCHAR(100),
@@ -23,7 +25,9 @@ CREATE TABLE IF NOT EXISTS STG.CHAMBRE (
 -- PK composite: (CD_MEDICAMENT, CATG_MEDICAMENT, MARQUE_FABRI)
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.MEDICAMENT (
+DROP TABLE IF EXISTS STG.MEDICAMENT;
+
+CREATE TABLE STG.MEDICAMENT (
     CD_MEDICAMENT           VARCHAR(20)       NOT NULL,
     CATG_MEDICAMENT         VARCHAR(50)       NOT NULL,
     MARQUE_FABRI            VARCHAR(100)      NOT NULL,
@@ -37,7 +41,9 @@ CREATE TABLE IF NOT EXISTS STG.MEDICAMENT (
 -- Chargement: FULL
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.PERSONNEL (
+DROP TABLE IF EXISTS STG.PERSONNEL;
+
+CREATE TABLE STG.PERSONNEL (
     ID_PERSONNEL            INTEGER           NOT NULL,
     NOM_PERSONNEL           VARCHAR(100)      NOT NULL,
     PRENOM_PERSONNEL        VARCHAR(100)      NOT NULL,
@@ -56,7 +62,9 @@ CREATE TABLE IF NOT EXISTS STG.PERSONNEL (
 -- Chargement: DELTA (incrémental)
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.PATIENT (
+DROP TABLE IF EXISTS STG.PATIENT;
+
+CREATE TABLE STG.PATIENT (
     ID_PATIENT              INTEGER           NOT NULL,
     NOM_PATIENT             VARCHAR(100)      NOT NULL,
     PRENOM_PATIENT          VARCHAR(100)      NOT NULL,
@@ -82,7 +90,9 @@ CREATE TABLE IF NOT EXISTS STG.PATIENT (
 -- Chargement: DELTA
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.CONSULTATION (
+DROP TABLE IF EXISTS STG.CONSULTATION;
+
+CREATE TABLE STG.CONSULTATION (
     ID_CONSULT              INTEGER           NOT NULL,
     ID_PERSONNEL            INTEGER           NOT NULL,
     ID_PATIENT              INTEGER           NOT NULL,
@@ -104,7 +114,9 @@ CREATE TABLE IF NOT EXISTS STG.CONSULTATION (
 -- Chargement: DELTA
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.TRAITEMENT (
+DROP TABLE IF EXISTS STG.TRAITEMENT;
+
+CREATE TABLE STG.TRAITEMENT (
     ID_TRAITEMENT           INTEGER           NOT NULL,
     CD_MEDICAMENT           VARCHAR(20)       NOT NULL,
     CATG_MEDICAMENT         VARCHAR(50)       NOT NULL,
@@ -121,7 +133,9 @@ CREATE TABLE IF NOT EXISTS STG.TRAITEMENT (
 -- Chargement: DELTA
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS STG.HOSPITALISATION (
+DROP TABLE IF EXISTS STG.HOSPITALISATION;
+
+CREATE TABLE STG.HOSPITALISATION (
     ID_HOSPI                INTEGER           NOT NULL,
     ID_CONSULT              INTEGER           NOT NULL,
     NO_CHAMBRE              SMALLINT          NOT NULL,
