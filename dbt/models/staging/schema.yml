@@ -97,6 +97,91 @@ models:
       - name: medicine_packaging
         description: "Packaging / conditioning description."
 
+  - name: stg_consultation
+    description: >
+      Cleaned and renamed consultation records from the Staging layer.
+      Type casting only — no business logic.
+    columns:
+      - name: consultation_id
+        description: "Unique consultation identifier (source: ID_CONSULT)."
+        tests: [not_null, unique]
+      - name: patient_id
+        description: "FK to patient (source: ID_PATIENT)."
+        tests: [not_null]
+      - name: staff_id
+        description: "FK to staff (source: ID_PERSONNEL)."
+        tests: [not_null]
+      - name: treatment_id
+        description: "FK to treatment (source: ID_TRAITEMENT). Nullable."
+      - name: started_at
+        description: "Consultation start timestamp."
+      - name: ended_at
+        description: "Consultation end timestamp. Nullable."
+      - name: patient_weight_kg
+        description: "Patient weight in kg at time of consultation."
+      - name: patient_temperature
+        description: "Patient temperature at time of consultation."
+      - name: temperature_unit
+        description: "Temperature unit (C or F)."
+      - name: blood_pressure
+        description: "Patient blood pressure."
+      - name: pathology_description
+        description: "Description of the diagnosed pathology."
+      - name: diabetes_indicator
+        description: "Diabetes indicator flag."
+      - name: hospitalisation_indicator
+        description: "Whether the consultation led to a hospitalisation."
+
+  - name: stg_traitement
+    description: >
+      Cleaned and renamed treatment records from the Staging layer.
+      Type casting only — no business logic.
+    columns:
+      - name: treatment_id
+        description: "Unique treatment identifier (source: ID_TRAITEMENT)."
+        tests: [not_null, unique]
+      - name: consultation_id
+        description: "FK to consultation (source: ID_CONSULT)."
+        tests: [not_null]
+      - name: medicine_code
+        description: "Medication code (source: CD_MEDICAMENT)."
+        tests: [not_null]
+      - name: medicine_category
+        description: "Medication category (source: CATG_MEDICAMENT)."
+        tests: [not_null]
+      - name: manufacturer_brand
+        description: "Manufacturer brand (source: MARQUE_FABRI)."
+        tests: [not_null]
+      - name: medicine_quantity
+        description: "Prescribed quantity."
+      - name: dosage_description
+        description: "Dosage instructions."
+      - name: created_at
+        description: "Treatment creation timestamp."
+
+  - name: stg_hospitalisation
+    description: >
+      Cleaned and renamed hospitalisation records from the Staging layer.
+      Type casting only — no business logic.
+    columns:
+      - name: hospi_id
+        description: "Unique hospitalisation identifier (source: ID_HOSPI)."
+        tests: [not_null, unique]
+      - name: consultation_id
+        description: "FK to consultation (source: ID_CONSULT_hospi)."
+        tests: [not_null]
+      - name: room_number
+        description: "Room number (source: NO_CHAMBRE_hospi)."
+        tests: [not_null]
+      - name: responsible_staff_id
+        description: "Responsible staff member (source: ID_PERSONNEL_RESP)."
+      - name: started_at
+        description: "Hospitalisation start timestamp."
+      - name: ended_at
+        description: "Hospitalisation end timestamp. Nullable (ongoing stays)."
+      - name: cost
+        description: "Total hospitalisation cost in euros."
+
   - name: stg_personnel
     description: >
       Cleaned and renamed personnel records from the Staging layer.
