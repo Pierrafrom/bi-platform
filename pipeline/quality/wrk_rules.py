@@ -12,7 +12,6 @@ Return value convention: ``(wrk_stts_cd, rej_cod)``
 from __future__ import annotations
 
 from datetime import datetime
-from typing import cast
 
 
 def check_consultation(row: dict[str, object]) -> tuple[str, str | None]:
@@ -22,8 +21,8 @@ def check_consultation(row: dict[str, object]) -> tuple[str, str | None]:
     1. consultation_id must be non-null and > 0
     2. patient_id must be non-null
     3. staff_id must be non-null
-    4. started_at must be non-null
-    5. If ended_at is provided, it must be >= started_at
+    4. started_at must be a non-null datetime
+    5. If ended_at is provided, it must be a datetime and >= started_at
 
     Args:
         row: Dict with keys matching stg_consultation column names.
@@ -34,18 +33,21 @@ def check_consultation(row: dict[str, object]) -> tuple[str, str | None]:
     cid = row.get("consultation_id")
     if cid is None:
         return ("REJ", "NULL_MANDATORY")
-    if _is_numeric(cid) and _to_float(cid) <= 0:
+    if not _is_numeric(cid) or _to_float(cid) <= 0:
         return ("REJ", "WRONG_FORMAT")
     if row.get("patient_id") is None:
         return ("REJ", "NULL_MANDATORY")
     if row.get("staff_id") is None:
         return ("REJ", "NULL_MANDATORY")
-    started = cast(datetime | None, row.get("started_at"))
-    if started is None:
+    started = row.get("started_at")
+    if not isinstance(started, datetime):
         return ("REJ", "NULL_MANDATORY")
-    ended = cast(datetime | None, row.get("ended_at"))
-    if ended is not None and ended < started:
-        return ("REJ", "WRONG_FORMAT")
+    ended = row.get("ended_at")
+    if ended is not None:
+        if not isinstance(ended, datetime):
+            return ("REJ", "WRONG_FORMAT")
+        if ended < started:
+            return ("REJ", "WRONG_FORMAT")
     return ("OK", None)
 
 
@@ -68,7 +70,7 @@ def check_traitement(row: dict[str, object]) -> tuple[str, str | None]:
     tid = row.get("treatment_id")
     if tid is None:
         return ("REJ", "NULL_MANDATORY")
-    if _is_numeric(tid) and _to_float(tid) <= 0:
+    if not _is_numeric(tid) or _to_float(tid) <= 0:
         return ("REJ", "WRONG_FORMAT")
     for mandatory in (
         "consultation_id",
@@ -88,8 +90,8 @@ def check_hospitalisation(row: dict[str, object]) -> tuple[str, str | None]:
     1. hospi_id must be non-null and > 0
     2. consultation_id must be non-null
     3. room_number must be non-null
-    4. started_at must be non-null
-    5. If ended_at is provided, it must be >= started_at
+    4. started_at must be a non-null datetime
+    5. If ended_at is provided, it must be a datetime and >= started_at
     6. If cost is provided, it must be >= 0
 
     Args:
@@ -101,18 +103,21 @@ def check_hospitalisation(row: dict[str, object]) -> tuple[str, str | None]:
     hid = row.get("hospi_id")
     if hid is None:
         return ("REJ", "NULL_MANDATORY")
-    if _is_numeric(hid) and _to_float(hid) <= 0:
+    if not _is_numeric(hid) or _to_float(hid) <= 0:
         return ("REJ", "WRONG_FORMAT")
     if row.get("consultation_id") is None:
         return ("REJ", "NULL_MANDATORY")
     if row.get("room_number") is None:
         return ("REJ", "NULL_MANDATORY")
-    started = cast(datetime | None, row.get("started_at"))
-    if started is None:
+    started = row.get("started_at")
+    if not isinstance(started, datetime):
         return ("REJ", "NULL_MANDATORY")
-    ended = cast(datetime | None, row.get("ended_at"))
-    if ended is not None and ended < started:
-        return ("REJ", "WRONG_FORMAT")
+    ended = row.get("ended_at")
+    if ended is not None:
+        if not isinstance(ended, datetime):
+            return ("REJ", "WRONG_FORMAT")
+        if ended < started:
+            return ("REJ", "WRONG_FORMAT")
     cost = row.get("cost")
     if cost is not None and _to_float(cost) < 0:
         return ("REJ", "WRONG_FORMAT")
@@ -120,7 +125,7 @@ def check_hospitalisation(row: dict[str, object]) -> tuple[str, str | None]:
 
 
 def _is_numeric(value: object) -> bool:
-    """Return True if value can be coerced to float.
+    """Return True if value can be coerced to float (bool excluded).
 
     Args:
         value: Any value to check.
@@ -138,6 +143,8 @@ def _is_numeric(value: object) -> bool:
 def _to_float(value: object) -> float:
     """Coerce value to float; raises TypeError / ValueError if impossible.
 
+    bool is explicitly excluded: True/False are not valid numeric IDs.
+
     Args:
         value: Value to coerce.
 
@@ -145,9 +152,11 @@ def _to_float(value: object) -> float:
         The float representation of value.
 
     Raises:
-        TypeError: If value cannot be converted.
+        TypeError: If value is bool or cannot be converted.
         ValueError: If value is a non-numeric string.
     """
+    if isinstance(value, bool):
+        raise TypeError(f"bool is not a valid numeric value: {value!r}")
     if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, str):

@@ -134,6 +134,17 @@ class TestCheckConsultation:
         """
         assert check_consultation(self._valid(ended_at=_T0)) == ("OK", None)
 
+    def test_bool_consultation_id_is_rejected(self) -> None:
+        """bool True is not a valid numeric ID — must be rejected.
+
+        Returns:
+            None
+        """
+        assert check_consultation(self._valid(consultation_id=True)) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
+
 
 # ---------------------------------------------------------------------------
 # check_traitement
@@ -210,6 +221,17 @@ class TestCheckTraitement:
         row["medicine_quantity"] = None
         row["dosage_description"] = None
         assert check_traitement(row) == ("OK", None)
+
+    def test_bool_treatment_id_is_rejected(self) -> None:
+        """bool True is not a valid numeric ID — must be rejected.
+
+        Returns:
+            None
+        """
+        assert check_traitement(self._valid(treatment_id=True)) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -329,3 +351,22 @@ class TestCheckHospitalisation:
             None
         """
         assert check_hospitalisation(self._valid(cost=0.0)) == ("OK", None)
+
+    def test_ended_equal_started_is_ok(self) -> None:
+        """ended_at == started_at is valid (zero-duration stay).
+
+        Returns:
+            None
+        """
+        assert check_hospitalisation(self._valid(ended_at=_T0)) == ("OK", None)
+
+    def test_bool_hospi_id_is_rejected(self) -> None:
+        """bool True is not a valid numeric ID — must be rejected.
+
+        Returns:
+            None
+        """
+        assert check_hospitalisation(self._valid(hospi_id=True)) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )

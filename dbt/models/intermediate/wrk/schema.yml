@@ -15,14 +15,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: rej_dsc
@@ -54,14 +52,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY"]
+              values: ["NULL_MANDATORY"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
@@ -85,14 +81,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: rej_dsc
@@ -118,14 +112,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
@@ -149,14 +141,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
@@ -177,14 +167,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Reject reason code for rejected rows."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
@@ -205,14 +193,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Reject reason code for rejected rows."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt

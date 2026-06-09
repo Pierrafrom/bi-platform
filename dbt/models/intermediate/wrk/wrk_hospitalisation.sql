@@ -9,14 +9,28 @@
 
 WITH source AS (
 
-    SELECT * FROM {{ ref('stg_hospitalisation') }}
+    SELECT
+        hospi_id,
+        consultation_id,
+        room_number,
+        responsible_staff_id,
+        started_at,
+        ended_at,
+        cost
+    FROM {{ ref('stg_hospitalisation') }}
 
 ),
 
 quality_check AS (
 
     SELECT
-        *,
+        hospi_id,
+        consultation_id,
+        room_number,
+        responsible_staff_id,
+        started_at,
+        ended_at,
+        cost,
         CASE
             WHEN hospi_id IS NULL THEN 'REJ'
             WHEN hospi_id <= 0 THEN 'REJ'
@@ -46,10 +60,21 @@ quality_check AS (
 
 ),
 
-deduped AS (
+ok_deduped AS (
 
     SELECT
-        *,
+        hospi_id,
+        consultation_id,
+        room_number,
+        responsible_staff_id,
+        started_at,
+        ended_at,
+        cost,
+        wrk_stts_cd,
+        rej_cod,
+        rej_dsc,
+        batch_dt,
+        exec_id,
         ROW_NUMBER() OVER (
             PARTITION BY hospi_id
             ORDER BY started_at DESC
@@ -59,17 +84,36 @@ deduped AS (
 
 )
 
-SELECT * EXCLUDE (rn) FROM deduped
+SELECT
+    hospi_id,
+    consultation_id,
+    room_number,
+    responsible_staff_id,
+    started_at,
+    ended_at,
+    cost,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
+FROM ok_deduped
 WHERE rn = 1
 
 UNION ALL
 
-SELECT * EXCLUDE (rn)
-FROM (
-    SELECT
-        *,
-        1 AS rn
-    FROM quality_check
-    WHERE wrk_stts_cd = 'REJ'
-) AS rej_rows
-WHERE rn = 1
+SELECT
+    hospi_id,
+    consultation_id,
+    room_number,
+    responsible_staff_id,
+    started_at,
+    ended_at,
+    cost,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
+FROM quality_check
+WHERE wrk_stts_cd = 'REJ'

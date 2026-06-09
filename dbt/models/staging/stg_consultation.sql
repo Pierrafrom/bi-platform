@@ -19,18 +19,20 @@ renamed AS (
         id_personnel AS staff_id,
         id_traitement AS treatment_id,
 
-        -- Timestamps
+        -- Vitals
         unit_temp AS temperature_unit,
         tension_patient AS blood_pressure,
 
-        -- Vitals
+        -- Diagnosis
         dsc_patho AS pathology_description,
         indic_diabete AS diabetes_indicator,
         indic_hospi AS hospitalisation_indicator,
-        TRY_TO_TIMESTAMP_NTZ(ts_debut_consult) AS started_at,
 
-        -- Diagnosis
+        -- Timestamps
+        TRY_TO_TIMESTAMP_NTZ(ts_debut_consult) AS started_at,
         TRY_TO_TIMESTAMP_NTZ(ts_fin_consult) AS ended_at,
+
+        -- Vitals (measures)
         TRY_TO_DECIMAL(poids_patient, 6, 2) AS patient_weight_kg,
         TRY_TO_DECIMAL(temp_patient, 5, 2) AS patient_temperature
 

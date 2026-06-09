@@ -9,14 +9,40 @@
 
 WITH source AS (
 
-    SELECT * FROM {{ ref('stg_consultation') }}
+    SELECT
+        consultation_id,
+        patient_id,
+        staff_id,
+        treatment_id,
+        temperature_unit,
+        blood_pressure,
+        pathology_description,
+        diabetes_indicator,
+        hospitalisation_indicator,
+        started_at,
+        ended_at,
+        patient_weight_kg,
+        patient_temperature
+    FROM {{ ref('stg_consultation') }}
 
 ),
 
 quality_check AS (
 
     SELECT
-        *,
+        consultation_id,
+        patient_id,
+        staff_id,
+        treatment_id,
+        temperature_unit,
+        blood_pressure,
+        pathology_description,
+        diabetes_indicator,
+        hospitalisation_indicator,
+        started_at,
+        ended_at,
+        patient_weight_kg,
+        patient_temperature,
         CASE
             WHEN consultation_id IS NULL THEN 'REJ'
             WHEN consultation_id <= 0 THEN 'REJ'
@@ -44,10 +70,27 @@ quality_check AS (
 
 ),
 
-deduped AS (
+ok_deduped AS (
 
     SELECT
-        *,
+        consultation_id,
+        patient_id,
+        staff_id,
+        treatment_id,
+        temperature_unit,
+        blood_pressure,
+        pathology_description,
+        diabetes_indicator,
+        hospitalisation_indicator,
+        started_at,
+        ended_at,
+        patient_weight_kg,
+        patient_temperature,
+        wrk_stts_cd,
+        rej_cod,
+        rej_dsc,
+        batch_dt,
+        exec_id,
         ROW_NUMBER() OVER (
             PARTITION BY consultation_id
             ORDER BY started_at DESC
@@ -57,17 +100,48 @@ deduped AS (
 
 )
 
-SELECT * EXCLUDE (rn) FROM deduped
+SELECT
+    consultation_id,
+    patient_id,
+    staff_id,
+    treatment_id,
+    temperature_unit,
+    blood_pressure,
+    pathology_description,
+    diabetes_indicator,
+    hospitalisation_indicator,
+    started_at,
+    ended_at,
+    patient_weight_kg,
+    patient_temperature,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
+FROM ok_deduped
 WHERE rn = 1
 
 UNION ALL
 
-SELECT * EXCLUDE (rn)
-FROM (
-    SELECT
-        *,
-        1 AS rn
-    FROM quality_check
-    WHERE wrk_stts_cd = 'REJ'
-) AS rej_rows
-WHERE rn = 1
+SELECT
+    consultation_id,
+    patient_id,
+    staff_id,
+    treatment_id,
+    temperature_unit,
+    blood_pressure,
+    pathology_description,
+    diabetes_indicator,
+    hospitalisation_indicator,
+    started_at,
+    ended_at,
+    patient_weight_kg,
+    patient_temperature,
+    wrk_stts_cd,
+    rej_cod,
+    rej_dsc,
+    batch_dt,
+    exec_id
+FROM quality_check
+WHERE wrk_stts_cd = 'REJ'

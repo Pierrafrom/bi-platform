@@ -77,11 +77,10 @@ models:
       PK is composite: (medicine_code, medicine_category, manufacturer_brand).
     tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns:
-              - medicine_code
-              - medicine_category
-              - manufacturer_brand
+          combination_of_columns:
+            - medicine_code
+            - medicine_category
+            - manufacturer_brand
     columns:
       - name: medicine_code
         description: "Medication code — part of composite PK (source: CD_MEDICAMENT)."
