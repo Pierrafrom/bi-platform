@@ -44,6 +44,12 @@ models:
       +schema: soc
       +materialized: table
       +tags: ["socle"]
+    
+    # Vues — KPI views consumed by Power BI (Lot 4)
+    vues:
+      +schema: vw
+      +materialized: view
+      +tags: ["vues"]
 
 vars:
   batch_date: "1970-01-01"
