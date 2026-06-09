@@ -15,14 +15,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: rej_dsc
@@ -54,14 +52,101 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Rejection code. Null if OK."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY"]
+              values: ["NULL_MANDATORY"]
+              config:
+                where: "wrk_stts_cd = 'REJ'"
+      - name: batch_dt
+        description: "Batch date (from dbt var batch_date)."
+        tests: [not_null]
+      - name: exec_id
+        description: "Execution ID — FK to TCH.T_SUIV_TRMT."
+        tests: [not_null]
+
+  - name: wrk_consultation
+    description: >
+      Quality-controlled and deduplicated consultation records.
+      Adds wrk_stts_cd (OK/REJ), rej_cod, batch_dt, exec_id.
+      Dedup on consultation_id — most recent started_at wins.
+    columns:
+      - name: consultation_id
+        description: "Consultation identifier."
+        tests: [not_null]
+      - name: wrk_stts_cd
+        description: "Row status after quality control: OK or REJ."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["OK", "REJ"]
+      - name: rej_cod
+        description: "Rejection code. Null if OK."
+        tests:
+          - accepted_values:
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              config:
+                where: "wrk_stts_cd = 'REJ'"
+      - name: rej_dsc
+        description: "Rejection description. Null if OK."
+      - name: batch_dt
+        description: "Batch date (from dbt var batch_date)."
+        tests: [not_null]
+      - name: exec_id
+        description: "Execution ID — FK to TCH.T_SUIV_TRMT."
+        tests: [not_null]
+
+  - name: wrk_traitement
+    description: >
+      Quality-controlled and deduplicated treatment records.
+      Adds wrk_stts_cd (OK/REJ), rej_cod, batch_dt, exec_id.
+      Dedup on treatment_id — most recent created_at wins.
+    columns:
+      - name: treatment_id
+        description: "Treatment identifier."
+        tests: [not_null]
+      - name: wrk_stts_cd
+        description: "Row status after quality control: OK or REJ."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["OK", "REJ"]
+      - name: rej_cod
+        description: "Rejection code. Null if OK."
+        tests:
+          - accepted_values:
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              config:
+                where: "wrk_stts_cd = 'REJ'"
+      - name: batch_dt
+        description: "Batch date (from dbt var batch_date)."
+        tests: [not_null]
+      - name: exec_id
+        description: "Execution ID — FK to TCH.T_SUIV_TRMT."
+        tests: [not_null]
+
+  - name: wrk_hospitalisation
+    description: >
+      Quality-controlled and deduplicated hospitalisation records.
+      Adds wrk_stts_cd (OK/REJ), rej_cod, batch_dt, exec_id.
+      Dedup on hospi_id — most recent started_at wins.
+    columns:
+      - name: hospi_id
+        description: "Hospitalisation identifier."
+        tests: [not_null]
+      - name: wrk_stts_cd
+        description: "Row status after quality control: OK or REJ."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["OK", "REJ"]
+      - name: rej_cod
+        description: "Rejection code. Null if OK."
+        tests:
+          - accepted_values:
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
@@ -82,14 +167,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Reject reason code for rejected rows."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt
@@ -110,14 +193,12 @@ models:
         tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ["OK", "REJ"]
+              values: ["OK", "REJ"]
       - name: rej_cod
         description: "Reject reason code for rejected rows."
         tests:
           - accepted_values:
-              arguments:
-                values: ["NULL_MANDATORY", "WRONG_FORMAT"]
+              values: ["NULL_MANDATORY", "WRONG_FORMAT"]
               config:
                 where: "wrk_stts_cd = 'REJ'"
       - name: batch_dt

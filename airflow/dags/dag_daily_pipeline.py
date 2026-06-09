@@ -43,6 +43,12 @@ _DBT_DIR = os.getenv("DBT_PROJECT_DIR", "/opt/airflow/dbt")
 _DATABASE = os.getenv("SNOWFLAKE_DATABASE", "HOPITAL_DW")
 _TCH_SCHEMA = "TCH"
 
+# Log file path — configurable via PIPELINE_LOG_DIR (must exist at runtime).
+_LOG_FILE = os.path.join(
+    os.getenv("PIPELINE_LOG_DIR", "/opt/airflow/logs/pipeline"),
+    "daily_pipeline.log",
+)
+
 
 def _get_snowflake_connection() -> snowflake.connector.SnowflakeConnection:
     """Open a Snowflake connection from environment variables.
@@ -97,7 +103,7 @@ def daily_pipeline_dag() -> None:
         Returns:
             The generated RUN_ID (IDENTITY column value).
         """
-        configure_logging()
+        configure_logging(include_file=_LOG_FILE)
         logger.info("Opening tracking run for batch_date=%s", ds)
 
         conn = _get_snowflake_connection()
@@ -133,7 +139,7 @@ def daily_pipeline_dag() -> None:
         Returns:
             The generated EXEC_ID from T_SUIV_TRMT.
         """
-        configure_logging()
+        configure_logging(include_file=_LOG_FILE)
         logger.info("Starting STG ingestion for batch_date=%s run_id=%d", ds, run_id)
 
         conn = _get_snowflake_connection()
@@ -200,7 +206,7 @@ def daily_pipeline_dag() -> None:
             run_id: RUN_ID of the row to close.
             **context: Airflow context dictionary (injected automatically).
         """
-        configure_logging()
+        configure_logging(include_file=_LOG_FILE)
         ti = context["ti"]
 
         upstream_states = ti.xcom_pull(task_ids=["ingest_stg", "dbt_run", "dbt_test"])
