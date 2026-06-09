@@ -43,11 +43,12 @@ def check_consultation(row: dict[str, object]) -> tuple[str, str | None]:
     if not isinstance(started, datetime):
         return ("REJ", "NULL_MANDATORY")
     ended = row.get("ended_at")
-    if ended is not None:
-        if not isinstance(ended, datetime):
-            return ("REJ", "WRONG_FORMAT")
-        if ended < started:
-            return ("REJ", "WRONG_FORMAT")
+    if ended is None:
+        return ("REJ", "NULL_MANDATORY")
+    if not isinstance(ended, datetime):
+        return ("REJ", "WRONG_FORMAT")
+    if ended < started:
+        return ("REJ", "WRONG_FORMAT")
     return ("OK", None)
 
 
@@ -77,6 +78,7 @@ def check_traitement(row: dict[str, object]) -> tuple[str, str | None]:
         "medicine_code",
         "medicine_category",
         "manufacturer_brand",
+        "dosage_description",
     ):
         if row.get(mandatory) is None:
             return ("REJ", "NULL_MANDATORY")
@@ -108,6 +110,8 @@ def check_hospitalisation(row: dict[str, object]) -> tuple[str, str | None]:
     if row.get("consultation_id") is None:
         return ("REJ", "NULL_MANDATORY")
     if row.get("room_number") is None:
+        return ("REJ", "NULL_MANDATORY")
+    if row.get("responsible_staff_id") is None:
         return ("REJ", "NULL_MANDATORY")
     started = row.get("started_at")
     if not isinstance(started, datetime):

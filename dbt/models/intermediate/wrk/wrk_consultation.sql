@@ -49,7 +49,8 @@ quality_check AS (
             WHEN patient_id IS NULL THEN 'REJ'
             WHEN staff_id IS NULL THEN 'REJ'
             WHEN started_at IS NULL THEN 'REJ'
-            WHEN ended_at IS NOT NULL AND ended_at < started_at THEN 'REJ'
+            WHEN ended_at IS NULL THEN 'REJ'
+            WHEN ended_at < started_at THEN 'REJ'
             ELSE 'OK'
         END AS wrk_stts_cd,
         CASE
@@ -58,9 +59,8 @@ quality_check AS (
             WHEN patient_id IS NULL THEN 'NULL_MANDATORY'
             WHEN staff_id IS NULL THEN 'NULL_MANDATORY'
             WHEN started_at IS NULL THEN 'NULL_MANDATORY'
-            WHEN
-                ended_at IS NOT NULL AND ended_at < started_at
-                THEN 'WRONG_FORMAT'
+            WHEN ended_at IS NULL THEN 'NULL_MANDATORY'
+            WHEN ended_at < started_at THEN 'WRONG_FORMAT'
         END AS rej_cod,
         NULL::VARCHAR(500) AS rej_dsc,
         '{{ var("batch_date", "1970-01-01") }}'::DATE AS batch_dt,

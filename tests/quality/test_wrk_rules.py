@@ -62,13 +62,27 @@ class TestCheckConsultation:
         """
         assert check_consultation(self._valid()) == ("OK", None)
 
-    def test_valid_row_without_ended_at_is_ok(self) -> None:
-        """ended_at is optional — omitting it still produces OK.
+    def test_null_ended_at_is_rejected(self) -> None:
+        """ended_at is mandatory (DDL NOT NULL) — NULL triggers NULL_MANDATORY.
 
         Returns:
             None
         """
-        assert check_consultation(self._valid(ended_at=None)) == ("OK", None)
+        assert check_consultation(self._valid(ended_at=None)) == (
+            "REJ",
+            "NULL_MANDATORY",
+        )
+
+    def test_ended_at_as_string_is_rejected(self) -> None:
+        """ended_at provided as string (non-datetime) triggers WRONG_FORMAT.
+
+        Returns:
+            None
+        """
+        assert check_consultation(self._valid(ended_at="2026-01-01")) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
 
     def test_null_consultation_id_is_rejected(self) -> None:
         """Missing consultation_id triggers NULL_MANDATORY.
@@ -145,6 +159,25 @@ class TestCheckConsultation:
             "WRONG_FORMAT",
         )
 
+    def test_string_numeric_id_is_ok(self) -> None:
+        """A numeric string ID (e.g. '5') passes the format check.
+
+        Returns:
+            None
+        """
+        assert check_consultation(self._valid(consultation_id="5")) == ("OK", None)
+
+    def test_list_id_is_rejected(self) -> None:
+        """An unconvertible type (list) as ID triggers WRONG_FORMAT.
+
+        Returns:
+            None
+        """
+        assert check_consultation(self._valid(consultation_id=["bad"])) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
+
 
 # ---------------------------------------------------------------------------
 # check_traitement
@@ -169,6 +202,7 @@ class TestCheckTraitement:
             "medicine_code": "MED001",
             "medicine_category": "ANALGESIQUE",
             "manufacturer_brand": "BRAND_A",
+            "dosage_description": "1 comprimé matin et soir",
         }
         return {**base, **overrides}
 
@@ -211,16 +245,24 @@ class TestCheckTraitement:
         """
         assert check_traitement(self._valid(**{field: None})) == ("REJ", "NULL_MANDATORY")
 
-    def test_optional_fields_can_be_null(self) -> None:
-        """medicine_quantity and dosage_description are optional.
+    def test_optional_medicine_quantity_can_be_null(self) -> None:
+        """medicine_quantity is optional — null is accepted.
 
         Returns:
             None
         """
-        row = self._valid()
-        row["medicine_quantity"] = None
-        row["dosage_description"] = None
-        assert check_traitement(row) == ("OK", None)
+        assert check_traitement(self._valid(medicine_quantity=None)) == ("OK", None)
+
+    def test_null_dosage_description_is_rejected(self) -> None:
+        """Missing dosage_description triggers NULL_MANDATORY (DDL NOT NULL).
+
+        Returns:
+            None
+        """
+        assert check_traitement(self._valid(dosage_description=None)) == (
+            "REJ",
+            "NULL_MANDATORY",
+        )
 
     def test_bool_treatment_id_is_rejected(self) -> None:
         """bool True is not a valid numeric ID — must be rejected.
@@ -255,6 +297,7 @@ class TestCheckHospitalisation:
             "hospi_id": 1,
             "consultation_id": 10,
             "room_number": 101,
+            "responsible_staff_id": 5,
             "started_at": _T0,
             "ended_at": _T1,
             "cost": 350.0,
@@ -320,6 +363,17 @@ class TestCheckHospitalisation:
         """
         assert check_hospitalisation(self._valid(room_number=None)) == ("REJ", "NULL_MANDATORY")
 
+    def test_null_responsible_staff_id_is_rejected(self) -> None:
+        """Missing responsible_staff_id triggers NULL_MANDATORY (DDL NOT NULL).
+
+        Returns:
+            None
+        """
+        assert check_hospitalisation(self._valid(responsible_staff_id=None)) == (
+            "REJ",
+            "NULL_MANDATORY",
+        )
+
     def test_null_started_at_is_rejected(self) -> None:
         """Missing started_at triggers NULL_MANDATORY.
 
@@ -351,6 +405,17 @@ class TestCheckHospitalisation:
             None
         """
         assert check_hospitalisation(self._valid(cost=0.0)) == ("OK", None)
+
+    def test_ended_at_as_string_is_rejected(self) -> None:
+        """ended_at provided as string (non-datetime) triggers WRONG_FORMAT.
+
+        Returns:
+            None
+        """
+        assert check_hospitalisation(self._valid(ended_at="2026-01-01")) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
 
     def test_ended_equal_started_is_ok(self) -> None:
         """ended_at == started_at is valid (zero-duration stay).

@@ -41,6 +41,7 @@ quality_check AS (
             WHEN medicine_code IS NULL THEN 'REJ'
             WHEN medicine_category IS NULL THEN 'REJ'
             WHEN manufacturer_brand IS NULL THEN 'REJ'
+            WHEN dosage_description IS NULL THEN 'REJ'
             ELSE 'OK'
         END AS wrk_stts_cd,
         CASE
@@ -50,6 +51,7 @@ quality_check AS (
             WHEN medicine_code IS NULL THEN 'NULL_MANDATORY'
             WHEN medicine_category IS NULL THEN 'NULL_MANDATORY'
             WHEN manufacturer_brand IS NULL THEN 'NULL_MANDATORY'
+            WHEN dosage_description IS NULL THEN 'NULL_MANDATORY'
         END AS rej_cod,
         NULL::VARCHAR(500) AS rej_dsc,
         '{{ var("batch_date", "1970-01-01") }}'::DATE AS batch_dt,

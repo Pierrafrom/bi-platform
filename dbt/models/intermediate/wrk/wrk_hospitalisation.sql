@@ -36,6 +36,7 @@ quality_check AS (
             WHEN hospi_id <= 0 THEN 'REJ'
             WHEN consultation_id IS NULL THEN 'REJ'
             WHEN room_number IS NULL THEN 'REJ'
+            WHEN responsible_staff_id IS NULL THEN 'REJ'
             WHEN started_at IS NULL THEN 'REJ'
             WHEN ended_at IS NOT NULL AND ended_at < started_at THEN 'REJ'
             WHEN cost IS NOT NULL AND cost < 0 THEN 'REJ'
@@ -46,6 +47,7 @@ quality_check AS (
             WHEN hospi_id <= 0 THEN 'WRONG_FORMAT'
             WHEN consultation_id IS NULL THEN 'NULL_MANDATORY'
             WHEN room_number IS NULL THEN 'NULL_MANDATORY'
+            WHEN responsible_staff_id IS NULL THEN 'NULL_MANDATORY'
             WHEN started_at IS NULL THEN 'NULL_MANDATORY'
             WHEN
                 ended_at IS NOT NULL AND ended_at < started_at

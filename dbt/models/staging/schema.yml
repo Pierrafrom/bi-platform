@@ -115,7 +115,8 @@ models:
       - name: started_at
         description: "Consultation start timestamp."
       - name: ended_at
-        description: "Consultation end timestamp. Nullable."
+        description: "Consultation end timestamp (NOT NULL per DDL)."
+        tests: [not_null]
       - name: patient_weight_kg
         description: "Patient weight in kg at time of consultation."
       - name: patient_temperature
@@ -154,7 +155,8 @@ models:
       - name: medicine_quantity
         description: "Prescribed quantity."
       - name: dosage_description
-        description: "Dosage instructions."
+        description: "Dosage instructions (NOT NULL per DDL)."
+        tests: [not_null]
       - name: created_at
         description: "Treatment creation timestamp."
 
@@ -174,6 +176,7 @@ models:
         tests: [not_null]
       - name: responsible_staff_id
         description: "Responsible staff member (source: ID_PERSONNEL_RESP)."
+        tests: [not_null]
       - name: started_at
         description: "Hospitalisation start timestamp."
       - name: ended_at
