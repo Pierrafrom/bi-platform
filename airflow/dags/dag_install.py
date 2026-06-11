@@ -178,18 +178,12 @@ def install_sid_dag() -> None:
             **context: Airflow context dictionary.
         """
         configure_logging(include_file=_LOG_FILE)
-        ti = context["ti"]
-        state = ti.xcom_pull(task_ids="install_sid")
-        final_status = "OK" if state is not None else "KO"
-
-        # Also check actual task state for failures that don't push XCom
+        final_status = "KO"
         dag_run = context.get("dag_run")
         if dag_run is not None:
             for task_instance in dag_run.get_task_instances():
-                if task_instance.task_id == "install_sid" and task_instance.state not in (
-                    "success",
-                ):
-                    final_status = "KO"
+                if task_instance.task_id == "install_sid" and task_instance.state == "success":
+                    final_status = "OK"
                     break
 
         logger.info("Closing installation run_id=%d with status=%s", run_id, final_status)
@@ -214,7 +208,7 @@ def install_sid_dag() -> None:
 
     run_id = start_run()
     install = install_sid_task(run_id)
-    install >> end_run.override(trigger_rule=TriggerRule.ALL_DONE)(run_id)
+    install >> end_run(run_id)
 
 
 install_sid_dag()

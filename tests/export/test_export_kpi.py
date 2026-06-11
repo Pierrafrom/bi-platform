@@ -50,21 +50,13 @@ class TestExportView:
     """Tests for export_view."""
 
     def test_csv_is_created(self, tmp_path: Path) -> None:
-        """A CSV file is written at output_dir/<view_name>.csv.
-
-        Returns:
-            None
-        """
+        """A CSV file is written at output_dir/<view_name>.csv."""
         conn = _make_conn(["COL_A", "COL_B"], [(1, "x"), (2, "y")])
         export_view(conn, "VW_TEST", tmp_path)
         assert (tmp_path / "vw_test.csv").exists()
 
     def test_header_row_matches_columns(self, tmp_path: Path) -> None:
-        """The first row of the CSV contains the column names from the cursor.
-
-        Returns:
-            None
-        """
+        """The first row of the CSV contains the column names from the cursor."""
         cols = ["PATHOLOGY", "AVG_AGE", "PATIENT_COUNT"]
         conn = _make_conn(cols, [(("Diabète", 55.3, 42))])
         export_view(conn, "VW_AVG_AGE_BY_PATHOLOGY", tmp_path)
@@ -75,21 +67,13 @@ class TestExportView:
         assert header == cols
 
     def test_row_count_is_returned(self, tmp_path: Path) -> None:
-        """export_view returns the number of data rows written.
-
-        Returns:
-            None
-        """
+        """export_view returns the number of data rows written."""
         conn = _make_conn(["A"], [(1,), (2,), (3,)])
         count = export_view(conn, "VW_TEST", tmp_path)
         assert count == 3
 
     def test_empty_view_writes_header_only(self, tmp_path: Path) -> None:
-        """An empty view produces a file with a header and no data rows.
-
-        Returns:
-            None
-        """
+        """An empty view produces a file with a header and no data rows."""
         conn = _make_conn(["COL_A"], [])
         count = export_view(conn, "VW_EMPTY", tmp_path)
         assert count == 0
@@ -99,33 +83,21 @@ class TestExportView:
         assert len(lines) == 1
 
     def test_semicolon_delimiter(self, tmp_path: Path) -> None:
-        """CSV files use semicolons as delimiter (Power BI / Excel FR compatible).
-
-        Returns:
-            None
-        """
+        """CSV files use semicolons as delimiter (Power BI / Excel FR compatible)."""
         conn = _make_conn(["A", "B"], [(10, 20)])
         export_view(conn, "VW_TEST", tmp_path)
         content = (tmp_path / "vw_test.csv").read_text(encoding="utf-8-sig")
         assert ";" in content
 
     def test_output_dir_is_created_if_missing(self, tmp_path: Path) -> None:
-        """export_view creates the output directory if it does not exist.
-
-        Returns:
-            None
-        """
+        """export_view creates the output directory if it does not exist."""
         nested = tmp_path / "deep" / "nested"
         conn = _make_conn(["A"], [(1,)])
         export_view(conn, "VW_TEST", nested)
         assert nested.is_dir()
 
     def test_sql_query_uses_view_name(self, tmp_path: Path) -> None:
-        """The SELECT query targets the correct qualified view name.
-
-        Returns:
-            None
-        """
+        """The SELECT query targets the correct qualified view name."""
         cursor = _make_cursor(["X"], [(42,)])
         conn = MagicMock()
         conn.cursor.return_value = cursor
@@ -144,11 +116,7 @@ class TestRunExport:
     """Tests for run_export."""
 
     def test_all_six_views_are_exported(self, tmp_path: Path) -> None:
-        """run_export produces one CSV file per KPI view.
-
-        Returns:
-            None
-        """
+        """run_export produces one CSV file per KPI view."""
         with patch(
             "pipeline.export.export_kpi._get_snowflake_connection",
         ) as mock_conn_factory:
@@ -158,11 +126,7 @@ class TestRunExport:
         assert set(results.keys()) == set(_KPI_VIEWS)
 
     def test_returns_row_count_per_view(self, tmp_path: Path) -> None:
-        """run_export returns a dict mapping view name → row count.
-
-        Returns:
-            None
-        """
+        """run_export returns a dict mapping view name → row count."""
         with patch(
             "pipeline.export.export_kpi._get_snowflake_connection",
         ) as mock_conn_factory:
@@ -172,11 +136,7 @@ class TestRunExport:
         assert all(v == 2 for v in results.values())
 
     def test_connection_is_closed_on_success(self, tmp_path: Path) -> None:
-        """The Snowflake connection is always closed after export.
-
-        Returns:
-            None
-        """
+        """The Snowflake connection is always closed after export."""
         mock_conn = _make_conn(["COL"], [])
         with patch(
             "pipeline.export.export_kpi._get_snowflake_connection",
@@ -187,11 +147,7 @@ class TestRunExport:
         mock_conn.close.assert_called_once()
 
     def test_connection_is_closed_on_error(self, tmp_path: Path) -> None:
-        """The Snowflake connection is closed even when export raises.
-
-        Returns:
-            None
-        """
+        """The Snowflake connection is closed even when export raises."""
         broken_conn = MagicMock()
         broken_conn.cursor.side_effect = RuntimeError("db error")
 
@@ -207,11 +163,7 @@ class TestRunExport:
         broken_conn.close.assert_called_once()
 
     def test_csv_files_are_named_after_views(self, tmp_path: Path) -> None:
-        """Each CSV file is named after the lowercase view name.
-
-        Returns:
-            None
-        """
+        """Each CSV file is named after the lowercase view name."""
         with patch(
             "pipeline.export.export_kpi._get_snowflake_connection",
         ) as mock_conn_factory:
