@@ -60,9 +60,9 @@ SELECT
     medicine_category,
     manufacturer_brand,
     total_quantity,
-    RANK() OVER (
+    ROW_NUMBER() OVER (
         PARTITION BY
             pathology_description, consultation_year, consultation_month
-        ORDER BY total_quantity DESC
+        ORDER BY total_quantity DESC, medicine_code ASC
     ) AS rank_by_quantity
 FROM aggregated

@@ -12,7 +12,7 @@ Views exported:
     - VW.VW_EMPTY_ROOMS
 
 Usage:
-    python pipeline/export/export_kpi.py [--output-dir outputs/kpi]
+    python -m pipeline.export.export_kpi [--output-dir outputs/kpi]
 
 Snowflake credentials are read from environment variables (or a .env file):
     SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT,
@@ -25,19 +25,15 @@ import argparse
 import csv
 import logging
 import os
-import sys
 from pathlib import Path
 
 import snowflake.connector
 from dotenv import load_dotenv
 
-sys.path.append(str(Path(__file__).resolve().parents[2]))
-
 from pipeline.utils.logging_config import configure_logging
 
 _LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 _DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs" / "kpi"
-_DATABASE = os.getenv("SNOWFLAKE_DATABASE", "HOPITAL_DW")
 _VW_SCHEMA = "VW"
 
 _KPI_VIEWS: tuple[str, ...] = (
@@ -49,9 +45,6 @@ _KPI_VIEWS: tuple[str, ...] = (
     "VW_EMPTY_ROOMS",
 )
 
-load_dotenv()
-_LOG_DIR.mkdir(exist_ok=True)
-configure_logging(include_file=str(_LOG_DIR / "export_kpi.log"))
 logger = logging.getLogger(__name__)
 
 
@@ -64,16 +57,17 @@ def _get_snowflake_connection() -> snowflake.connector.SnowflakeConnection:
     Raises:
         snowflake.connector.errors.DatabaseError: On connection failure.
     """
+    database = os.getenv("SNOWFLAKE_DATABASE", "HOPITAL_DW")
     conn = snowflake.connector.connect(
         user=os.getenv("SNOWFLAKE_USER"),
         password=os.getenv("SNOWFLAKE_PASSWORD"),
         account=os.getenv("SNOWFLAKE_ACCOUNT"),
         warehouse=os.getenv("SNOWFLAKE_WAREHOUSE"),
         role=os.getenv("SNOWFLAKE_ROLE"),
-        database=_DATABASE,
+        database=database,
         schema=_VW_SCHEMA,
     )
-    logger.info("Connected to Snowflake (database=%s, schema=%s).", _DATABASE, _VW_SCHEMA)
+    logger.info("Connected to Snowflake (database=%s, schema=%s).", database, _VW_SCHEMA)
     return conn
 
 
@@ -128,6 +122,10 @@ def run_export(output_dir: Path) -> dict[str, int]:
     Raises:
         snowflake.connector.errors.DatabaseError: On connection or query failure.
     """
+    load_dotenv()
+    _LOG_DIR.mkdir(exist_ok=True)
+    configure_logging(include_file=str(_LOG_DIR / "export_kpi.log"))
+
     logger.info("Starting KPI export to %s.", output_dir)
     results: dict[str, int] = {}
 

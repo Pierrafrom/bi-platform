@@ -148,6 +148,13 @@ class TestCheckConsultation:
         """
         assert check_consultation(self._valid(ended_at=_T0)) == ("OK", None)
 
+    def test_started_at_as_string_is_wrong_format(self) -> None:
+        """started_at as a string must produce WRONG_FORMAT, not NULL_MANDATORY."""
+        assert check_consultation(self._valid(started_at="2026-01-01")) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
+
     def test_bool_consultation_id_is_rejected(self) -> None:
         """bool True is not a valid numeric ID — must be rejected.
 
@@ -435,3 +442,14 @@ class TestCheckHospitalisation:
             "REJ",
             "WRONG_FORMAT",
         )
+
+    def test_started_at_as_string_is_wrong_format(self) -> None:
+        """started_at as a string must produce WRONG_FORMAT, not NULL_MANDATORY."""
+        assert check_hospitalisation(self._valid(started_at="2026-01-01")) == (
+            "REJ",
+            "WRONG_FORMAT",
+        )
+
+    def test_non_numeric_cost_does_not_raise(self) -> None:
+        """Non-numeric cost string must not raise — treated as not-a-number, row passes."""
+        assert check_hospitalisation(self._valid(cost="N/A")) == ("OK", None)

@@ -26,7 +26,7 @@ SELECT
     pathology_description,
     consultation_year,
     consultation_month,
-    ROUND(AVG(DATEDIFF('year', birth_date, started_at)), 1)
+    ROUND(AVG(FLOOR(DATEDIFF('day', birth_date, started_at) / 365.25)), 1)
         AS avg_age_at_consultation,
     COUNT(DISTINCT patient_id) AS patient_count
 FROM consultations

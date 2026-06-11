@@ -100,7 +100,7 @@ def install_sid_dag() -> None:
                         (CURRENT_TIMESTAMP(), 'ENC', 'INSTALL')
                     """
                 )
-                cur.execute("SELECT MAX(RUN_ID) FROM TCH.T_SUIV_RUN")
+                cur.execute('SELECT "RUN_ID" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))')
                 row = cur.fetchone()
                 run_id: int = row[0] if row else 0
             conn.commit()
@@ -136,7 +136,7 @@ def install_sid_dag() -> None:
                     """,
                     (run_id,),
                 )
-                cur.execute("SELECT MAX(EXEC_ID) FROM TCH.T_SUIV_TRMT")
+                cur.execute('SELECT "EXEC_ID" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))')
                 row = cur.fetchone()
                 exec_id = row[0] if row else 0
             conn.commit()

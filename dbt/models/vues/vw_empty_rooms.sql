@@ -3,24 +3,24 @@
 -- KPI 6 : Chambres non occupées par période.
 -- Génère une ligne par (période, chambre).
 -- Power BI filtre sur occupancy_status = 'Libre'.
--- Les périodes sont dérivées des hospitalisations existantes.
+-- periods dérivé de fait_consult pour inclure les mois sans hospi.
 
-WITH periods AS (
-
-    SELECT DISTINCT
-        YEAR(started_at) AS hospi_year,
-        MONTH(started_at) AS hospi_month
-    FROM {{ ref('r_hospi') }}
-
-),
-
-occupied_rooms AS (
+WITH occupied_rooms AS (
 
     SELECT DISTINCT
         room_number,
         YEAR(started_at) AS hospi_year,
         MONTH(started_at) AS hospi_month
     FROM {{ ref('r_hospi') }}
+
+),
+
+periods AS (
+
+    SELECT DISTINCT
+        YEAR(started_at) AS hospi_year,
+        MONTH(started_at) AS hospi_month
+    FROM {{ ref('fait_consult') }}
 
 ),
 
