@@ -13,8 +13,10 @@ WITH consultations AS (
         fc.pathology_description,
         rs.staff_id,
         rs.job_title,
+        DATE(fc.started_at) AS consultation_date,
         YEAR(fc.started_at) AS consultation_year,
-        MONTH(fc.started_at) AS consultation_month
+        MONTH(fc.started_at) AS consultation_month,
+        DAY(fc.started_at) AS consultation_day
     FROM {{ ref('fait_consult') }} AS fc
     INNER JOIN {{ ref('r_stf') }} AS rs
         ON fc.staff_id = rs.staff_id
@@ -26,15 +28,19 @@ by_specialty AS (
 
     SELECT
         pathology_description,
+        consultation_date,
         consultation_year,
         consultation_month,
+        consultation_day,
         job_title,
         COUNT(DISTINCT staff_id) AS doctor_count
     FROM consultations
     GROUP BY
         pathology_description,
+        consultation_date,
         consultation_year,
         consultation_month,
+        consultation_day,
         job_title
 
 ),
@@ -43,21 +49,27 @@ totals AS (
 
     SELECT
         pathology_description,
+        consultation_date,
         consultation_year,
         consultation_month,
+        consultation_day,
         SUM(doctor_count) AS total_doctors
     FROM by_specialty
     GROUP BY
         pathology_description,
+        consultation_date,
         consultation_year,
-        consultation_month
+        consultation_month,
+        consultation_day
 
 )
 
 SELECT
     bs.pathology_description,
+    bs.consultation_date,
     bs.consultation_year,
     bs.consultation_month,
+    bs.consultation_day,
     bs.job_title AS specialty,
     bs.doctor_count,
     t.total_doctors,
@@ -66,5 +78,4 @@ FROM by_specialty AS bs
 INNER JOIN totals AS t
     ON
         bs.pathology_description = t.pathology_description
-        AND bs.consultation_year = t.consultation_year
-        AND bs.consultation_month = t.consultation_month
+        AND bs.consultation_date = t.consultation_date

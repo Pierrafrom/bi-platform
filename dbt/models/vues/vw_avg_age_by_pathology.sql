@@ -11,8 +11,10 @@ WITH consultations AS (
         fc.pathology_description,
         ri.birth_date,
         fc.started_at,
+        DATE(fc.started_at) AS consultation_date,
         YEAR(fc.started_at) AS consultation_year,
-        MONTH(fc.started_at) AS consultation_month
+        MONTH(fc.started_at) AS consultation_month,
+        DAY(fc.started_at) AS consultation_day
     FROM {{ ref('fait_consult') }} AS fc
     INNER JOIN {{ ref('r_indiv') }} AS ri
         ON fc.patient_id = ri.indiv_id
@@ -24,13 +26,17 @@ WITH consultations AS (
 
 SELECT
     pathology_description,
+    consultation_date,
     consultation_year,
     consultation_month,
+    consultation_day,
     ROUND(AVG(FLOOR(DATEDIFF('day', birth_date, started_at) / 365.25)), 1)
         AS avg_age_at_consultation,
     COUNT(DISTINCT patient_id) AS patient_count
 FROM consultations
 GROUP BY
     pathology_description,
+    consultation_date,
     consultation_year,
-    consultation_month
+    consultation_month,
+    consultation_day

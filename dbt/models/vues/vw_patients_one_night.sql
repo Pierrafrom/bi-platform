@@ -9,8 +9,10 @@ WITH stays AS (
 
     SELECT
         hospi_id,
+        DATE(started_at) AS hospi_date,
         YEAR(started_at) AS hospi_year,
         MONTH(started_at) AS hospi_month,
+        DAY(started_at) AS hospi_day,
         CASE
             WHEN duration_days IS NOT NULL AND duration_days >= 1 THEN 1
             ELSE 0
@@ -20,12 +22,16 @@ WITH stays AS (
 )
 
 SELECT
+    hospi_date,
     hospi_year,
     hospi_month,
+    hospi_day,
     COUNT(*) AS total_hospitalisations,
     SUM(is_one_night_plus) AS one_night_plus_count,
     ROUND(100.0 * SUM(is_one_night_plus) / COUNT(*), 2) AS one_night_plus_pct
 FROM stays
 GROUP BY
+    hospi_date,
     hospi_year,
-    hospi_month
+    hospi_month,
+    hospi_day

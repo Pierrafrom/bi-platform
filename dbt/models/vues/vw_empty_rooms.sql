@@ -18,8 +18,10 @@ WITH occupied_rooms AS (
 periods AS (
 
     SELECT DISTINCT
+        DATE(started_at) AS hospi_date,
         YEAR(started_at) AS hospi_year,
-        MONTH(started_at) AS hospi_month
+        MONTH(started_at) AS hospi_month,
+        DAY(started_at) AS hospi_day
     FROM {{ ref('fait_consult') }}
 
 ),
@@ -27,8 +29,10 @@ periods AS (
 all_rooms_per_period AS (
 
     SELECT
+        p.hospi_date,
         p.hospi_year,
         p.hospi_month,
+        p.hospi_day,
         r.room_num,
         r.room_name,
         r.room_typ,
@@ -39,8 +43,10 @@ all_rooms_per_period AS (
 )
 
 SELECT
+    arp.hospi_date,
     arp.hospi_year,
     arp.hospi_month,
+    arp.hospi_day,
     arp.room_num,
     arp.room_name,
     arp.room_typ,

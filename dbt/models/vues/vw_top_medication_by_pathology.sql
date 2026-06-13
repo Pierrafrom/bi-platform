@@ -13,8 +13,10 @@ WITH prescriptions AS (
         rt.medicine_category,
         rt.manufacturer_brand,
         rm.medc_name AS medicine_name,
+        DATE(fc.started_at) AS consultation_date,
         YEAR(fc.started_at) AS consultation_year,
         MONTH(fc.started_at) AS consultation_month,
+        DAY(fc.started_at) AS consultation_day,
         COALESCE(rt.medicine_quantity, 0) AS quantity
     FROM {{ ref('fait_consult') }} AS fc
     INNER JOIN {{ ref('r_trmt') }} AS rt
@@ -32,8 +34,10 @@ aggregated AS (
 
     SELECT
         pathology_description,
+        consultation_date,
         consultation_year,
         consultation_month,
+        consultation_day,
         medicine_code,
         medicine_name,
         medicine_category,
@@ -42,8 +46,10 @@ aggregated AS (
     FROM prescriptions
     GROUP BY
         pathology_description,
+        consultation_date,
         consultation_year,
         consultation_month,
+        consultation_day,
         medicine_code,
         medicine_name,
         medicine_category,
@@ -53,8 +59,10 @@ aggregated AS (
 
 SELECT
     pathology_description,
+    consultation_date,
     consultation_year,
     consultation_month,
+    consultation_day,
     medicine_code,
     medicine_name,
     medicine_category,
@@ -62,7 +70,7 @@ SELECT
     total_quantity,
     ROW_NUMBER() OVER (
         PARTITION BY
-            pathology_description, consultation_year, consultation_month
+            pathology_description, consultation_date
         ORDER BY total_quantity DESC, medicine_code ASC
     ) AS rank_by_quantity
 FROM aggregated
