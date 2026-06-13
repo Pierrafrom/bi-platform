@@ -122,10 +122,6 @@ def run_export(output_dir: Path) -> dict[str, int]:
     Raises:
         snowflake.connector.errors.DatabaseError: On connection or query failure.
     """
-    load_dotenv()
-    _LOG_DIR.mkdir(exist_ok=True)
-    configure_logging(include_file=str(_LOG_DIR / "export_kpi.log"))
-
     logger.info("Starting KPI export to %s.", output_dir)
     results: dict[str, int] = {}
 
@@ -163,5 +159,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    _LOG_DIR.mkdir(exist_ok=True)
+    configure_logging(include_file=str(_LOG_DIR / "export_kpi.log"))
     args = _parse_args()
     run_export(args.output_dir)

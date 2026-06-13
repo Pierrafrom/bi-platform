@@ -25,6 +25,7 @@ from datetime import datetime
 
 import snowflake.connector
 from airflow.decorators import dag, task
+from airflow.utils.state import TaskInstanceState
 from airflow.utils.trigger_rule import TriggerRule
 
 from pipeline.install_sid import run_installation
@@ -102,7 +103,7 @@ def install_sid_dag() -> None:
                 )
                 cur.execute('SELECT "RUN_ID" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))')
                 row = cur.fetchone()
-                run_id: int = row[0] if row else 0
+                run_id: int = row[0] or 0
             conn.commit()
         finally:
             conn.close()
@@ -138,7 +139,7 @@ def install_sid_dag() -> None:
                 )
                 cur.execute('SELECT "EXEC_ID" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))')
                 row = cur.fetchone()
-                exec_id = row[0] if row else 0
+                exec_id = row[0] or 0
             conn.commit()
         finally:
             conn.close()
@@ -152,22 +153,25 @@ def install_sid_dag() -> None:
             logger.error("SID installation failed: %s", exc)
             raise
         finally:
-            conn2 = _get_snowflake_connection()
             try:
-                with conn2.cursor() as cur:
-                    cur.execute(
-                        """
-                        UPDATE TCH.T_SUIV_TRMT
-                        SET EXEC_END_DTTM = CURRENT_TIMESTAMP(),
-                            EXEC_STTS_CD  = %s,
-                            ERR_MSG       = %s
-                        WHERE EXEC_ID = %s
-                        """,
-                        (status, err_msg, exec_id),
-                    )
-                conn2.commit()
-            finally:
-                conn2.close()
+                conn2 = _get_snowflake_connection()
+                try:
+                    with conn2.cursor() as cur:
+                        cur.execute(
+                            """
+                            UPDATE TCH.T_SUIV_TRMT
+                            SET EXEC_END_DTTM = CURRENT_TIMESTAMP(),
+                                EXEC_STTS_CD  = %s,
+                                ERR_MSG       = %s
+                            WHERE EXEC_ID = %s
+                            """,
+                            (status, err_msg, exec_id),
+                        )
+                    conn2.commit()
+                finally:
+                    conn2.close()
+            except Exception as tracking_exc:
+                logger.warning("Failed to update T_SUIV_TRMT tracking: %s", tracking_exc)
 
     @task(task_id="end_run", trigger_rule=TriggerRule.ALL_DONE)
     def end_run(run_id: int, **context: object) -> None:
@@ -182,7 +186,10 @@ def install_sid_dag() -> None:
         dag_run = context.get("dag_run")
         if dag_run is not None:
             for task_instance in dag_run.get_task_instances():
-                if task_instance.task_id == "install_sid" and task_instance.state == "success":
+                if task_instance.task_id == "install_sid" and task_instance.state in (
+                    "success",
+                    TaskInstanceState.SUCCESS,
+                ):
                     final_status = "OK"
                     break
 
