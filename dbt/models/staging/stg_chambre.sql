@@ -22,7 +22,7 @@ renamed AS (
         prix_jour AS day_rate,
 
         -- Dates
-        TRY_TO_DATE(dt_creation, 'YYYY-MM-DD') AS created_date
+        dt_creation::DATE AS created_date
 
     FROM source
 

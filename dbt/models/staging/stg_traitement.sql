@@ -24,10 +24,10 @@ renamed AS (
 
         -- Prescription
         dsc_posologie AS dosage_description,
-        TRY_TO_DECIMAL(qte_medicament, 8, 3) AS medicine_quantity,
+        qte_medicament::DECIMAL(8, 3) AS medicine_quantity,
 
         -- Audit
-        TRY_TO_TIMESTAMP_NTZ(ts_creation_traitement) AS created_at
+        ts_creation_traitement::TIMESTAMP_NTZ AS created_at
 
     FROM source
 

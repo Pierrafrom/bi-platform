@@ -29,12 +29,12 @@ renamed AS (
         indic_hospi AS hospitalisation_indicator,
 
         -- Timestamps
-        TRY_TO_TIMESTAMP_NTZ(ts_debut_consult) AS started_at,
-        TRY_TO_TIMESTAMP_NTZ(ts_fin_consult) AS ended_at,
+        ts_debut_consult::TIMESTAMP_NTZ AS started_at,
+        ts_fin_consult::TIMESTAMP_NTZ AS ended_at,
 
         -- Vitals (measures)
-        TRY_TO_DECIMAL(poids_patient, 6, 2) AS patient_weight_kg,
-        TRY_TO_DECIMAL(temp_patient, 5, 2) AS patient_temperature
+        poids_patient::DECIMAL(6, 2) AS patient_weight_kg,
+        temp_patient::DECIMAL(5, 2) AS patient_temperature
 
     FROM source
 

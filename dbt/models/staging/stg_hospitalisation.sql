@@ -15,14 +15,14 @@ renamed AS (
     SELECT
         -- Keys
         id_hospi AS hospi_id,
-        id_consult_hospi AS consultation_id,
-        no_chambre_hospi AS room_number,
+        id_consult AS consultation_id,
+        no_chambre AS room_number,
         id_personnel_resp AS responsible_staff_id,
 
         -- Stay
-        TRY_TO_TIMESTAMP_NTZ(ts_debut_hospi) AS started_at,
-        TRY_TO_TIMESTAMP_NTZ(ts_fin_hospi) AS ended_at,
-        TRY_TO_DECIMAL(cout_hospi, 10, 2) AS cost
+        ts_debut_hospi::TIMESTAMP_NTZ AS started_at,
+        ts_fin_hospi::TIMESTAMP_NTZ AS ended_at,
+        cout_hospi::DECIMAL(10, 2) AS cost
 
     FROM source
 

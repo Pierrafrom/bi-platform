@@ -36,11 +36,11 @@ renamed AS (
         cd_postal AS postal_code,
         ville AS city,
         pays AS country,
-        TRY_TO_DATE(dt_naiss) AS birth_date,
+        dt_naiss::DATE AS birth_date,
 
         -- Audit
-        TRY_TO_TIMESTAMP_NTZ(ts_creation_patient) AS created_at,
-        TRY_TO_TIMESTAMP_NTZ(ts_maj_patient) AS updated_at
+        ts_creation_patient::TIMESTAMP_NTZ AS created_at,
+        ts_maj_patient::TIMESTAMP_NTZ AS updated_at
 
     FROM source
 
