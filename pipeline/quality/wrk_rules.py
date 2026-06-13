@@ -40,8 +40,10 @@ def check_consultation(row: dict[str, object]) -> tuple[str, str | None]:
     if row.get("staff_id") is None:
         return ("REJ", "NULL_MANDATORY")
     started = row.get("started_at")
-    if not isinstance(started, datetime):
+    if started is None:
         return ("REJ", "NULL_MANDATORY")
+    if not isinstance(started, datetime):
+        return ("REJ", "WRONG_FORMAT")
     ended = row.get("ended_at")
     if ended is None:
         return ("REJ", "NULL_MANDATORY")
@@ -114,8 +116,10 @@ def check_hospitalisation(row: dict[str, object]) -> tuple[str, str | None]:
     if row.get("responsible_staff_id") is None:
         return ("REJ", "NULL_MANDATORY")
     started = row.get("started_at")
-    if not isinstance(started, datetime):
+    if started is None:
         return ("REJ", "NULL_MANDATORY")
+    if not isinstance(started, datetime):
+        return ("REJ", "WRONG_FORMAT")
     ended = row.get("ended_at")
     if ended is not None:
         if not isinstance(ended, datetime):
@@ -123,7 +127,7 @@ def check_hospitalisation(row: dict[str, object]) -> tuple[str, str | None]:
         if ended < started:
             return ("REJ", "WRONG_FORMAT")
     cost = row.get("cost")
-    if cost is not None and _to_float(cost) < 0:
+    if cost is not None and _is_numeric(cost) and _to_float(cost) < 0:
         return ("REJ", "WRONG_FORMAT")
     return ("OK", None)
 

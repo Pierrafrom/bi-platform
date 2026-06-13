@@ -1,11 +1,12 @@
 """Install the hospital SID (Snowflake Information System) schema.
 
-Runs the three idempotent DDL scripts in order against the Snowflake account
+Runs four idempotent DDL scripts in order against the Snowflake account
 configured via environment variables:
 
-    1. 00_create_databases.sql — databases and warehouses (idempotent)
+    1. 00_create_databases.sql — databases, schemas and warehouses (idempotent)
     2. 01_create_stg_tables.sql — STG tables (always recreated)
-    3. 06_create_tch_tables.sql — TCH tracking tables (never recreated)
+    3. 02_create_soc_tables.sql — SOC tables (never recreated, CREATE IF NOT EXISTS)
+    4. 06_create_tch_tables.sql — TCH tracking tables (never recreated)
 
 Usage:
     python pipeline/install_sid.py
@@ -35,6 +36,7 @@ _LOG_DIR = Path(__file__).resolve().parent / "logs"
 _SCRIPT_ORDER: tuple[str, ...] = (
     "00_create_databases.sql",
     "01_create_stg_tables.sql",
+    "02_create_soc_tables.sql",
     "06_create_tch_tables.sql",
 )
 

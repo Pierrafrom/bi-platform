@@ -79,7 +79,7 @@ ok_deduped AS (
         exec_id,
         ROW_NUMBER() OVER (
             PARTITION BY treatment_id
-            ORDER BY created_at DESC NULLS LAST
+            ORDER BY created_at DESC NULLS LAST, treatment_id ASC
         ) AS rn
     FROM quality_check
     WHERE wrk_stts_cd = 'OK'

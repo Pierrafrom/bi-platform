@@ -32,6 +32,7 @@ from datetime import datetime, timedelta
 import snowflake.connector
 from airflow.decorators import dag, task
 from airflow.operators.bash import BashOperator
+from airflow.utils.state import TaskInstanceState
 from airflow.utils.trigger_rule import TriggerRule
 
 from pipeline.ingest.ingest_stg import ingest_batch
@@ -218,6 +219,7 @@ def daily_pipeline_dag() -> None:
             for task_instance in dag_run.get_task_instances():
                 if task_instance.task_id in ("dbt_run", "dbt_test") and task_instance.state not in (
                     "success",
+                    TaskInstanceState.SUCCESS,
                 ):
                     failed = True
                     break
