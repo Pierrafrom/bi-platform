@@ -3,26 +3,28 @@ version: 2
 models:
   - name: vw_avg_age_by_pathology
     description: >
-      KPI 1 — Âge moyen des patients par pathologie et période.
-      Une ligne par (pathologie, report_date). Utilisé pour filtrer dans Power BI.
+      KPI 1 — Âge des patients au moment de la consultation, par pathologie.
+      Grain détaillé : une ligne par consultation. Power BI agrège via
+      AVERAGE(age_at_consultation) et DISTINCTCOUNT(patient_id).
     columns:
       - name: pathology_description
         description: "Libellé de la pathologie diagnostiquée."
         tests: [not_null]
+      - name: patient_id
+        description: "Identifiant du patient."
+        tests: [not_null]
       - name: report_date
         description: "Date de la consultation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
-      - name: avg_age_at_consultation
-        description: "Âge moyen des patients au moment de la consultation (arrondi à 1 décimale)."
-        tests: [not_null]
-      - name: patient_count
-        description: "Nombre de patients distincts pour cette pathologie et cette période."
+      - name: age_at_consultation
+        description: "Âge du patient au moment de la consultation (années révolues)."
         tests: [not_null]
 
   - name: vw_top_medication_by_pathology
     description: >
-      KPI 2 — Médicament le plus prescrit (en quantité) par pathologie et période.
-      rank_by_quantity = 1 identifie le médicament numéro 1 par (pathologie, report_date).
+      KPI 2 — Quantités de médicaments prescrits par pathologie et période.
+      Grain : une ligne par (pathologie, date, médicament). Power BI resomme
+      total_quantity par médicament sur la période et classe via DAX (TOPN).
     columns:
       - name: pathology_description
         description: "Libellé de la pathologie."
@@ -34,7 +36,8 @@ models:
         description: "Code du médicament."
         tests: [not_null]
       - name: medicine_name
-        description: "Nom du médicament (depuis r_medc). Nullable si non référencé."
+        description: "Nom du médicament (depuis r_medc, retombe sur medicine_code si non référencé)."
+        tests: [not_null]
       - name: medicine_category
         description: "Catégorie du médicament."
         tests: [not_null]
@@ -42,49 +45,43 @@ models:
         description: "Marque du fabricant."
         tests: [not_null]
       - name: total_quantity
-        description: "Quantité totale prescrite sur la période."
-        tests: [not_null]
-      - name: rank_by_quantity
-        description: "Rang par quantité décroissante. 1 = médicament le plus prescrit."
+        description: "Quantité prescrite pour ce médicament, cette pathologie, ce jour."
         tests: [not_null]
 
   - name: vw_rooms_by_pathology
     description: >
-      KPI 3 — Nombre de chambres distinctes ayant accueilli des patients
-      diagnostiqués d'une certaine pathologie, par période.
+      KPI 3 — Chambres ayant accueilli des patients diagnostiqués d'une
+      certaine pathologie. Grain détaillé : une ligne par hospitalisation.
+      Power BI compte les chambres distinctes via DISTINCTCOUNT(room_number).
     columns:
       - name: pathology_description
         description: "Libellé de la pathologie."
         tests: [not_null]
+      - name: room_number
+        description: "Numéro de la chambre occupée durant l'hospitalisation."
+        tests: [not_null]
       - name: report_date
         description: "Date de la consultation (Power BI en extrait année/mois/jour)."
-        tests: [not_null]
-      - name: room_count
-        description: "Nombre de chambres distinctes ayant accueilli cette pathologie sur la période."
         tests: [not_null]
 
   - name: vw_doctor_speciality_by_pathology
     description: >
-      KPI 4 — Proportion de médecins par spécialité ayant diagnostiqué une pathologie
-      donnée, par période. specialty = job_title dans r_stf.
+      KPI 4 — Médecins (par spécialité) ayant diagnostiqué une pathologie
+      donnée. Grain détaillé : une ligne par consultation. specialty = job_title
+      dans r_stf. Power BI agrège via DISTINCTCOUNT(staff_id) + mesure de
+      proportion.
     columns:
       - name: pathology_description
         description: "Libellé de la pathologie."
         tests: [not_null]
-      - name: report_date
-        description: "Date de la consultation (Power BI en extrait année/mois/jour)."
+      - name: staff_id
+        description: "Identifiant du médecin ayant réalisé la consultation."
         tests: [not_null]
       - name: specialty
         description: "Spécialité du médecin (intitulé de poste)."
         tests: [not_null]
-      - name: doctor_count
-        description: "Nombre de médecins distincts de cette spécialité pour cette pathologie."
-        tests: [not_null]
-      - name: total_doctors
-        description: "Total des médecins distincts pour cette pathologie et cette période."
-        tests: [not_null]
-      - name: doctor_proportion_pct
-        description: "Proportion en % : doctor_count / total_doctors × 100."
+      - name: report_date
+        description: "Date de la consultation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
 
   - name: vw_patients_one_night

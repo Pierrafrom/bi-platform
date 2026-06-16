@@ -1,35 +1,19 @@
 {{ config(materialized="view", schema="vw") }}
 
--- KPI 1 : Âge moyen des patients par pathologie et période.
--- Power BI : filtres sur pathology_description, report_date
--- (année/mois/jour extraits nativement par Power BI depuis la DATE).
--- report_date est nommé de façon générique (et identique dans les 6 vues)
--- pour pouvoir le relier à une seule table de dates côté Power BI.
-
-WITH consultations AS (
-
-    SELECT
-        fc.patient_id,
-        fc.pathology_description,
-        ri.birth_date,
-        fc.started_at,
-        DATE(fc.started_at) AS report_date
-    FROM {{ ref('fait_consult') }} AS fc
-    INNER JOIN {{ ref('r_indiv') }} AS ri
-        ON fc.patient_id = ri.indiv_id
-    WHERE
-        fc.pathology_description IS NOT NULL
-        AND ri.birth_date IS NOT NULL
-
-)
+-- KPI 1 : Âge des patients au moment de la consultation, par pathologie.
+-- Grain détaillé : une ligne par consultation (pas de pré-agrégation).
+-- Power BI calcule l'âge moyen via AVERAGE(age_at_consultation) et le nombre
+-- de patients via DISTINCTCOUNT(patient_id) — corrects sur toute période.
 
 SELECT
-    pathology_description,
-    report_date,
-    ROUND(AVG(FLOOR(DATEDIFF('day', birth_date, started_at) / 365.25)), 1)
-        AS avg_age_at_consultation,
-    COUNT(DISTINCT patient_id) AS patient_count
-FROM consultations
-GROUP BY
-    pathology_description,
-    report_date
+    fc.pathology_description,
+    fc.patient_id,
+    DATE(fc.started_at) AS report_date,
+    FLOOR(DATEDIFF('day', ri.birth_date, fc.started_at) / 365.25)
+        AS age_at_consultation
+FROM {{ ref('fait_consult') }} AS fc
+INNER JOIN {{ ref('r_indiv') }} AS ri
+    ON fc.patient_id = ri.indiv_id
+WHERE
+    fc.pathology_description IS NOT NULL
+    AND ri.birth_date IS NOT NULL

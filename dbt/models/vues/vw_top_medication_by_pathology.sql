@@ -1,11 +1,12 @@
 {{ config(materialized="view", schema="vw") }}
 
--- KPI 2 : Médicament le plus prescrit (en quantité) par pathologie et période.
--- rank_by_quantity = 1 : médicament n°1 par (pathologie, report_date).
--- Power BI : filtres sur pathology_description, report_date
--- (année/mois/jour extraits nativement par Power BI depuis la DATE).
+-- KPI 2 : Quantités de médicaments prescrits par pathologie et période.
+-- Grain : une ligne par (pathologie, date, médicament). Pas de rang
+-- pré-calculé : un rang par jour empêcherait de déterminer le médicament le
+-- plus prescrit sur une période de plusieurs jours. Power BI resomme
+-- total_quantity par médicament puis classe via une mesure DAX (TOPN).
 -- medicine_name retombe sur medicine_code si non référencé dans r_medc,
--- pour éviter une cellule vide dans la table/le visuel Top 1 côté Power BI.
+-- pour éviter une cellule vide dans le visuel Top 1 côté Power BI.
 
 WITH prescriptions AS (
 
@@ -27,27 +28,6 @@ WITH prescriptions AS (
             AND rt.manufacturer_brand = rm.manf_brnd
     WHERE fc.pathology_description IS NOT NULL
 
-),
-
-aggregated AS (
-
-    SELECT
-        pathology_description,
-        report_date,
-        medicine_code,
-        medicine_name,
-        medicine_category,
-        manufacturer_brand,
-        SUM(quantity) AS total_quantity
-    FROM prescriptions
-    GROUP BY
-        pathology_description,
-        report_date,
-        medicine_code,
-        medicine_name,
-        medicine_category,
-        manufacturer_brand
-
 )
 
 SELECT
@@ -57,10 +37,12 @@ SELECT
     medicine_name,
     medicine_category,
     manufacturer_brand,
-    total_quantity,
-    ROW_NUMBER() OVER (
-        PARTITION BY
-            pathology_description, report_date
-        ORDER BY total_quantity DESC, medicine_code ASC
-    ) AS rank_by_quantity
-FROM aggregated
+    SUM(quantity) AS total_quantity
+FROM prescriptions
+GROUP BY
+    pathology_description,
+    report_date,
+    medicine_code,
+    medicine_name,
+    medicine_category,
+    manufacturer_brand

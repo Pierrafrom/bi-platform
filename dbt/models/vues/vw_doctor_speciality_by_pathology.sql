@@ -1,63 +1,17 @@
 {{ config(materialized="view", schema="vw") }}
 
--- KPI 4 : Proportion de médecins par spécialité (job_title) ayant diagnostiqué
---         une pathologie donnée, par période.
--- doctor_proportion_pct = médecins de cette spécialité /
---                         total médecins pour la pathologie.
--- Power BI : filtres sur pathology_description, report_date
--- (année/mois/jour extraits nativement par Power BI depuis la DATE).
-
-WITH consultations AS (
-
-    SELECT
-        fc.pathology_description,
-        rs.staff_id,
-        rs.job_title,
-        DATE(fc.started_at) AS report_date
-    FROM {{ ref('fait_consult') }} AS fc
-    INNER JOIN {{ ref('r_stf') }} AS rs
-        ON fc.staff_id = rs.staff_id
-    WHERE fc.pathology_description IS NOT NULL
-
-),
-
-by_specialty AS (
-
-    SELECT
-        pathology_description,
-        report_date,
-        job_title,
-        COUNT(DISTINCT staff_id) AS doctor_count
-    FROM consultations
-    GROUP BY
-        pathology_description,
-        report_date,
-        job_title
-
-),
-
-totals AS (
-
-    SELECT
-        pathology_description,
-        report_date,
-        SUM(doctor_count) AS total_doctors
-    FROM by_specialty
-    GROUP BY
-        pathology_description,
-        report_date
-
-)
+-- KPI 4 : Médecins (par spécialité) ayant diagnostiqué une pathologie donnée.
+-- Grain détaillé : une ligne par consultation. Power BI calcule les médecins
+-- distincts via DISTINCTCOUNT(staff_id) et la proportion par spécialité via
+-- DAX — corrects sur toute période (pré-agréger un doctor_count par jour le
+-- rendrait faux sur plusieurs jours).
 
 SELECT
-    bs.pathology_description,
-    bs.report_date,
-    bs.job_title AS specialty,
-    bs.doctor_count,
-    t.total_doctors,
-    ROUND(100.0 * bs.doctor_count / t.total_doctors, 2) AS doctor_proportion_pct
-FROM by_specialty AS bs
-INNER JOIN totals AS t
-    ON
-        bs.pathology_description = t.pathology_description
-        AND bs.report_date = t.report_date
+    fc.pathology_description,
+    rs.staff_id,
+    rs.job_title AS specialty,
+    DATE(fc.started_at) AS report_date
+FROM {{ ref('fait_consult') }} AS fc
+INNER JOIN {{ ref('r_stf') }} AS rs
+    ON fc.staff_id = rs.staff_id
+WHERE fc.pathology_description IS NOT NULL
