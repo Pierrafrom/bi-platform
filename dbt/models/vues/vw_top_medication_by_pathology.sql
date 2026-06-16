@@ -1,9 +1,9 @@
 {{ config(materialized="view", schema="vw") }}
 
 -- KPI 2 : Médicament le plus prescrit (en quantité) par pathologie et période.
--- rank_by_quantity = 1 : médicament n°1 par (pathologie, année, mois).
--- Power BI : filtres sur pathology_description, consultation_year,
--- consultation_month.
+-- rank_by_quantity = 1 : médicament n°1 par (pathologie, consultation_date).
+-- Power BI : filtres sur pathology_description, consultation_date
+-- (année/mois/jour extraits nativement par Power BI depuis la DATE).
 
 WITH prescriptions AS (
 
@@ -14,9 +14,6 @@ WITH prescriptions AS (
         rt.manufacturer_brand,
         rm.medc_name AS medicine_name,
         DATE(fc.started_at) AS consultation_date,
-        YEAR(fc.started_at) AS consultation_year,
-        MONTH(fc.started_at) AS consultation_month,
-        DAY(fc.started_at) AS consultation_day,
         COALESCE(rt.medicine_quantity, 0) AS quantity
     FROM {{ ref('fait_consult') }} AS fc
     INNER JOIN {{ ref('r_trmt') }} AS rt
@@ -35,9 +32,6 @@ aggregated AS (
     SELECT
         pathology_description,
         consultation_date,
-        consultation_year,
-        consultation_month,
-        consultation_day,
         medicine_code,
         medicine_name,
         medicine_category,
@@ -47,9 +41,6 @@ aggregated AS (
     GROUP BY
         pathology_description,
         consultation_date,
-        consultation_year,
-        consultation_month,
-        consultation_day,
         medicine_code,
         medicine_name,
         medicine_category,
@@ -60,9 +51,6 @@ aggregated AS (
 SELECT
     pathology_description,
     consultation_date,
-    consultation_year,
-    consultation_month,
-    consultation_day,
     medicine_code,
     medicine_name,
     medicine_category,

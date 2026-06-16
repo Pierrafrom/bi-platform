@@ -4,6 +4,11 @@
 -- Génère une ligne par (période, chambre).
 -- Power BI filtre sur occupancy_status = 'Libre'.
 -- periods dérivé de fait_consult pour inclure les mois sans hospi.
+-- hospi_year/hospi_month restent dans les CTE internes (occupied_rooms,
+-- periods, all_rooms_per_period) : l'occupation n'est connue qu'au mois
+-- (pas de table jour par jour dans r_hospi), donc le JOIN doit rester sur
+-- année+mois. Seul le SELECT final exposé à Power BI a été nettoyé
+-- (hospi_year/hospi_month redondants avec hospi_date supprimés en sortie).
 
 WITH occupied_rooms AS (
 
@@ -44,8 +49,6 @@ all_rooms_per_period AS (
 
 SELECT
     arp.hospi_date,
-    arp.hospi_year,
-    arp.hospi_month,
     arp.hospi_day,
     arp.room_num,
     arp.room_name,

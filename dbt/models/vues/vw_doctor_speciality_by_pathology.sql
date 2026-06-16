@@ -4,8 +4,8 @@
 --         une pathologie donnée, par période.
 -- doctor_proportion_pct = médecins de cette spécialité /
 --                         total médecins pour la pathologie.
--- Power BI : filtres sur pathology_description, consultation_year,
--- consultation_month.
+-- Power BI : filtres sur pathology_description, consultation_date
+-- (année/mois/jour extraits nativement par Power BI depuis la DATE).
 
 WITH consultations AS (
 
@@ -13,10 +13,7 @@ WITH consultations AS (
         fc.pathology_description,
         rs.staff_id,
         rs.job_title,
-        DATE(fc.started_at) AS consultation_date,
-        YEAR(fc.started_at) AS consultation_year,
-        MONTH(fc.started_at) AS consultation_month,
-        DAY(fc.started_at) AS consultation_day
+        DATE(fc.started_at) AS consultation_date
     FROM {{ ref('fait_consult') }} AS fc
     INNER JOIN {{ ref('r_stf') }} AS rs
         ON fc.staff_id = rs.staff_id
@@ -29,18 +26,12 @@ by_specialty AS (
     SELECT
         pathology_description,
         consultation_date,
-        consultation_year,
-        consultation_month,
-        consultation_day,
         job_title,
         COUNT(DISTINCT staff_id) AS doctor_count
     FROM consultations
     GROUP BY
         pathology_description,
         consultation_date,
-        consultation_year,
-        consultation_month,
-        consultation_day,
         job_title
 
 ),
@@ -50,26 +41,17 @@ totals AS (
     SELECT
         pathology_description,
         consultation_date,
-        consultation_year,
-        consultation_month,
-        consultation_day,
         SUM(doctor_count) AS total_doctors
     FROM by_specialty
     GROUP BY
         pathology_description,
-        consultation_date,
-        consultation_year,
-        consultation_month,
-        consultation_day
+        consultation_date
 
 )
 
 SELECT
     bs.pathology_description,
     bs.consultation_date,
-    bs.consultation_year,
-    bs.consultation_month,
-    bs.consultation_day,
     bs.job_title AS specialty,
     bs.doctor_count,
     t.total_doctors,

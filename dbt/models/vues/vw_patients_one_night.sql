@@ -3,15 +3,13 @@
 -- KPI 5 : Proportion de patients hospitalisés ayant séjourné au moins une nuit,
 --         par période de début d'hospitalisation.
 -- Au moins une nuit = duration_days >= 1 (ended_at - started_at ≥ 1 jour).
--- Power BI : filtres sur hospi_year, hospi_month.
+-- Power BI : filtres sur hospi_date (année/mois extraits nativement).
 
 WITH stays AS (
 
     SELECT
         hospi_id,
         DATE(started_at) AS hospi_date,
-        YEAR(started_at) AS hospi_year,
-        MONTH(started_at) AS hospi_month,
         DAY(started_at) AS hospi_day,
         CASE
             WHEN duration_days IS NOT NULL AND duration_days >= 1 THEN 1
@@ -23,8 +21,6 @@ WITH stays AS (
 
 SELECT
     hospi_date,
-    hospi_year,
-    hospi_month,
     hospi_day,
     COUNT(*) AS total_hospitalisations,
     SUM(is_one_night_plus) AS one_night_plus_count,
@@ -32,6 +28,4 @@ SELECT
 FROM stays
 GROUP BY
     hospi_date,
-    hospi_year,
-    hospi_month,
     hospi_day
