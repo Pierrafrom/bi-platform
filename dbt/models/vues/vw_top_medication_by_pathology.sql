@@ -1,9 +1,11 @@
 {{ config(materialized="view", schema="vw") }}
 
 -- KPI 2 : Médicament le plus prescrit (en quantité) par pathologie et période.
--- rank_by_quantity = 1 : médicament n°1 par (pathologie, consultation_date).
--- Power BI : filtres sur pathology_description, consultation_date
+-- rank_by_quantity = 1 : médicament n°1 par (pathologie, report_date).
+-- Power BI : filtres sur pathology_description, report_date
 -- (année/mois/jour extraits nativement par Power BI depuis la DATE).
+-- medicine_name retombe sur medicine_code si non référencé dans r_medc,
+-- pour éviter une cellule vide dans la table/le visuel Top 1 côté Power BI.
 
 WITH prescriptions AS (
 
@@ -12,8 +14,8 @@ WITH prescriptions AS (
         rt.medicine_code,
         rt.medicine_category,
         rt.manufacturer_brand,
-        rm.medc_name AS medicine_name,
-        DATE(fc.started_at) AS consultation_date,
+        COALESCE(rm.medc_name, rt.medicine_code) AS medicine_name,
+        DATE(fc.started_at) AS report_date,
         COALESCE(rt.medicine_quantity, 0) AS quantity
     FROM {{ ref('fait_consult') }} AS fc
     INNER JOIN {{ ref('r_trmt') }} AS rt
@@ -31,7 +33,7 @@ aggregated AS (
 
     SELECT
         pathology_description,
-        consultation_date,
+        report_date,
         medicine_code,
         medicine_name,
         medicine_category,
@@ -40,7 +42,7 @@ aggregated AS (
     FROM prescriptions
     GROUP BY
         pathology_description,
-        consultation_date,
+        report_date,
         medicine_code,
         medicine_name,
         medicine_category,
@@ -50,7 +52,7 @@ aggregated AS (
 
 SELECT
     pathology_description,
-    consultation_date,
+    report_date,
     medicine_code,
     medicine_name,
     medicine_category,
@@ -58,7 +60,7 @@ SELECT
     total_quantity,
     ROW_NUMBER() OVER (
         PARTITION BY
-            pathology_description, consultation_date
+            pathology_description, report_date
         ORDER BY total_quantity DESC, medicine_code ASC
     ) AS rank_by_quantity
 FROM aggregated

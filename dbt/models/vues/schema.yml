@@ -4,12 +4,12 @@ models:
   - name: vw_avg_age_by_pathology
     description: >
       KPI 1 — Âge moyen des patients par pathologie et période.
-      Une ligne par (pathologie, date de consultation). Utilisé pour filtrer dans Power BI.
+      Une ligne par (pathologie, report_date). Utilisé pour filtrer dans Power BI.
     columns:
       - name: pathology_description
         description: "Libellé de la pathologie diagnostiquée."
         tests: [not_null]
-      - name: consultation_date
+      - name: report_date
         description: "Date de la consultation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
       - name: avg_age_at_consultation
@@ -22,12 +22,12 @@ models:
   - name: vw_top_medication_by_pathology
     description: >
       KPI 2 — Médicament le plus prescrit (en quantité) par pathologie et période.
-      rank_by_quantity = 1 identifie le médicament numéro 1 par (pathologie, date de consultation).
+      rank_by_quantity = 1 identifie le médicament numéro 1 par (pathologie, report_date).
     columns:
       - name: pathology_description
         description: "Libellé de la pathologie."
         tests: [not_null]
-      - name: consultation_date
+      - name: report_date
         description: "Date de la consultation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
       - name: medicine_code
@@ -56,7 +56,7 @@ models:
       - name: pathology_description
         description: "Libellé de la pathologie."
         tests: [not_null]
-      - name: consultation_date
+      - name: report_date
         description: "Date de la consultation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
       - name: room_count
@@ -71,7 +71,7 @@ models:
       - name: pathology_description
         description: "Libellé de la pathologie."
         tests: [not_null]
-      - name: consultation_date
+      - name: report_date
         description: "Date de la consultation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
       - name: specialty
@@ -92,11 +92,8 @@ models:
       KPI 5 — Proportion de patients hospitalisés ayant séjourné au moins une nuit,
       par période de début d'hospitalisation (duration_days >= 1).
     columns:
-      - name: hospi_date
-        description: "Date de début d'hospitalisation (Power BI en extrait année/mois)."
-        tests: [not_null]
-      - name: hospi_day
-        description: "Jour du mois de début d'hospitalisation (1–31)."
+      - name: report_date
+        description: "Date de début d'hospitalisation (Power BI en extrait année/mois/jour)."
         tests: [not_null]
       - name: total_hospitalisations
         description: "Nombre total d'hospitalisations sur la période."
@@ -113,11 +110,8 @@ models:
       KPI 6 — Statut d'occupation de chaque chambre par période.
       Une ligne par (période, chambre). Filtrer sur occupancy_status = 'Libre' dans Power BI.
     columns:
-      - name: hospi_date
-        description: "Date de la période (Power BI en extrait année/mois)."
-        tests: [not_null]
-      - name: hospi_day
-        description: "Jour du mois de la période (1–31)."
+      - name: report_date
+        description: "Date de la période (Power BI en extrait année/mois/jour)."
         tests: [not_null]
       - name: room_num
         description: "Numéro de chambre."

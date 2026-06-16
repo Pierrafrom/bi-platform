@@ -8,7 +8,8 @@
 -- periods, all_rooms_per_period) : l'occupation n'est connue qu'au mois
 -- (pas de table jour par jour dans r_hospi), donc le JOIN doit rester sur
 -- année+mois. Seul le SELECT final exposé à Power BI a été nettoyé
--- (hospi_year/hospi_month redondants avec hospi_date supprimés en sortie).
+-- (hospi_year/hospi_month redondants avec report_date supprimés en sortie,
+-- report_date nommé de façon générique et identique dans les 6 vues).
 
 WITH occupied_rooms AS (
 
@@ -23,10 +24,9 @@ WITH occupied_rooms AS (
 periods AS (
 
     SELECT DISTINCT
-        DATE(started_at) AS hospi_date,
+        DATE(started_at) AS report_date,
         YEAR(started_at) AS hospi_year,
-        MONTH(started_at) AS hospi_month,
-        DAY(started_at) AS hospi_day
+        MONTH(started_at) AS hospi_month
     FROM {{ ref('fait_consult') }}
 
 ),
@@ -34,10 +34,9 @@ periods AS (
 all_rooms_per_period AS (
 
     SELECT
-        p.hospi_date,
+        p.report_date,
         p.hospi_year,
         p.hospi_month,
-        p.hospi_day,
         r.room_num,
         r.room_name,
         r.room_typ,
@@ -48,8 +47,7 @@ all_rooms_per_period AS (
 )
 
 SELECT
-    arp.hospi_date,
-    arp.hospi_day,
+    arp.report_date,
     arp.room_num,
     arp.room_name,
     arp.room_typ,
