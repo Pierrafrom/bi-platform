@@ -87,7 +87,9 @@ models:
   - name: vw_patients_one_night
     description: >
       KPI 5 — Proportion de patients hospitalisés ayant séjourné au moins une nuit,
-      par période de début d'hospitalisation (duration_days >= 1).
+      par période de début d'hospitalisation. Une nuit = séjour >= 8h réelles
+      (seuil PMSI). DATEDIFF('day') aurait compté des séjours de 1h passant
+      minuit comme "une nuit" — d'où le seuil horaire.
     columns:
       - name: report_date
         description: "Date de début d'hospitalisation (Power BI en extrait année/mois/jour)."
@@ -96,10 +98,10 @@ models:
         description: "Nombre total d'hospitalisations sur la période."
         tests: [not_null]
       - name: one_night_plus_count
-        description: "Nombre d'hospitalisations d'au moins une nuit."
+        description: "Nombre d'hospitalisations ayant duré >= 8h réelles (au moins une nuit)."
         tests: [not_null]
       - name: one_night_plus_pct
-        description: "Proportion en % : one_night_plus_count / total_hospitalisations × 100."
+        description: "Proportion en % : one_night_plus_count / total_hospitalisations × 100 (seuil 8h)."
         tests: [not_null]
 
   - name: vw_empty_rooms
