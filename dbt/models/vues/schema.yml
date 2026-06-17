@@ -106,8 +106,13 @@ models:
 
   - name: vw_empty_rooms
     description: >
-      KPI 6 — Statut d'occupation de chaque chambre par période.
-      Une ligne par (période, chambre). Filtrer sur occupancy_status = 'Libre' dans Power BI.
+      KPI 6 — Occupation des chambres par période. Une ligne par (date, chambre),
+      les 786 chambres chaque jour. Le statut d'occupation dépend de la période :
+      Power BI doit l'agréger via une mesure sur le flag is_occupied, jamais en
+      comptant le texte occupancy_status (qui varie d'un jour à l'autre et
+      double-compterait les chambres au-delà de 786). Mesures :
+      Chambres occupées = CALCULATE(DISTINCTCOUNT([room_num]), [is_occupied] = 1) ;
+      Chambres libres = DISTINCTCOUNT([room_num]) - [Chambres occupées].
     columns:
       - name: report_date
         description: "Date de la période (Power BI en extrait année/mois/jour)."
@@ -122,8 +127,18 @@ models:
         description: "Type de chambre."
       - name: buld_name
         description: "Nom du bâtiment."
+      - name: is_occupied
+        description: >
+          1 si une hospitalisation couvre la chambre ce jour-là, sinon 0.
+          Colonne à agréger côté Power BI (DISTINCTCOUNT filtré sur is_occupied = 1).
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: occupancy_status
-        description: "Statut d'occupation : 'Occupée' ou 'Libre'."
+        description: >
+          Statut texte 'Occupée'/'Libre' au jour J uniquement (drilldown sur une
+          seule journée). Ne pas agréger sur plusieurs jours — utiliser is_occupied.
         tests:
           - not_null
           - accepted_values:
