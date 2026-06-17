@@ -13,4 +13,6 @@ SELECT
 FROM {{ ref('fait_consult') }} AS fc
 INNER JOIN {{ ref('r_hospi') }} AS rh
     ON fc.consultation_id = rh.consultation_id
+INNER JOIN {{ ref('r_room') }} AS rr
+    ON rh.room_number = rr.room_num
 WHERE fc.pathology_description IS NOT NULL
