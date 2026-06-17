@@ -1,33 +1,33 @@
 {{ config(materialized="view", schema="vw") }}
 
 -- KPI 6 : Chambres non occupées par période.
--- Génère une ligne par (période, chambre).
+-- Grain : une ligne par (date, chambre).
+-- Une chambre est "Occupée" le jour J si une hospi vérifie
+-- DATE(started_at) <= J AND DATE(ended_at) >= J.
+-- Le JOIN mois-niveau précédent marquait toute chambre ayant eu UNE hospi
+-- dans le mois comme "Occupée" chaque jour du mois — d'où le faux 100%.
 -- Power BI filtre sur occupancy_status = 'Libre'.
--- periods dérivé de fait_consult pour inclure les mois sans hospi.
--- hospi_year/hospi_month restent dans les CTE internes (occupied_rooms,
--- periods, all_rooms_per_period) : l'occupation n'est connue qu'au mois
--- (pas de table jour par jour dans r_hospi), donc le JOIN doit rester sur
--- année+mois. Seul le SELECT final exposé à Power BI a été nettoyé
--- (hospi_year/hospi_month redondants avec report_date supprimés en sortie,
--- report_date nommé de façon générique et identique dans les 6 vues).
 
-WITH occupied_rooms AS (
+WITH periods AS (
 
-    SELECT DISTINCT
-        room_number,
-        YEAR(started_at) AS hospi_year,
-        MONTH(started_at) AS hospi_month
-    FROM {{ ref('r_hospi') }}
+    SELECT DISTINCT DATE(started_at) AS report_date
+    FROM {{ ref('fait_consult') }}
 
 ),
 
-periods AS (
+occupied_on_date AS (
 
     SELECT DISTINCT
-        DATE(started_at) AS report_date,
-        YEAR(started_at) AS hospi_year,
-        MONTH(started_at) AS hospi_month
-    FROM {{ ref('fait_consult') }}
+        rh.room_number,
+        p.report_date
+    FROM {{ ref('r_hospi') }} AS rh
+    INNER JOIN periods AS p
+        ON
+            DATE(rh.started_at) <= p.report_date
+            AND (
+                rh.ended_at IS NULL
+                OR DATE(rh.ended_at) >= p.report_date
+            )
 
 ),
 
@@ -35,8 +35,6 @@ all_rooms_per_period AS (
 
     SELECT
         p.report_date,
-        p.hospi_year,
-        p.hospi_month,
         r.room_num,
         r.room_name,
         r.room_typ,
@@ -53,12 +51,11 @@ SELECT
     arp.room_typ,
     arp.buld_name,
     CASE
-        WHEN orr.room_number IS NOT NULL THEN 'Occupée'
+        WHEN occ.room_number IS NOT NULL THEN 'Occupée'
         ELSE 'Libre'
     END AS occupancy_status
 FROM all_rooms_per_period AS arp
-LEFT JOIN occupied_rooms AS orr
+LEFT JOIN occupied_on_date AS occ
     ON
-        arp.room_num = orr.room_number
-        AND arp.hospi_year = orr.hospi_year
-        AND arp.hospi_month = orr.hospi_month
+        arp.room_num = occ.room_number
+        AND arp.report_date = occ.report_date
