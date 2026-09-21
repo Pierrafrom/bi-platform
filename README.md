@@ -18,8 +18,9 @@ Airflow orchestration.
 
 The brief: take daily flat-file exports from a fictional hospital's
 information system and turn them into governed, historized, query-ready
-tables a hospital's management could actually build dashboards on — room
-occupancy, consultations by pathology, prescribing patterns by department.
+tables a hospital's management could actually build dashboards on, such
+as room occupancy, consultations by pathology, or prescribing patterns
+by department.
 
 ## Architecture
 
@@ -34,10 +35,10 @@ inputs/Data Hospital/BDD_HOSPITAL_YYYYMMDD/
         dbt (transformations) ── Airflow (orchestration)
 ```
 
-Source tables: `PATIENT`, `PERSONNEL`, `CHAMBRE`, `MEDICAMENT`,
-`CONSULTATION`, `TRAITEMENT`, `HOSPITALISATION` — a small OLTP-shaped
+Source tables (`PATIENT`, `PERSONNEL`, `CHAMBRE`, `MEDICAMENT`,
+`CONSULTATION`, `TRAITEMENT`, `HOSPITALISATION`) form a small OLTP-shaped
 hospital schema (patients, staff, rooms, consultations, prescriptions,
-stays) reshaped into a Kimball-style star schema in the Socle/Vue layer.
+stays), reshaped into a Kimball-style star schema in the Socle/Vue layer.
 
 ## Stack
 
