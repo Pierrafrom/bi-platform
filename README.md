@@ -73,4 +73,4 @@ bi-platform/
 
 ## Contributors
 
-Pierre Fromont Boissel, Lucas, Mathéo Gros, Rania Alami, Robin Lanfranchi, EMeyzenq.
+Pierre Fromont Boissel, Lucas Silva, Matheo Gros, Rania El Alami, Robin Lanfranchi, Eliott Meyzenq.
